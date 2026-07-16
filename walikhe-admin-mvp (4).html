@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Walikhé — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#12192E; --ink-soft:#2B3350; --navy:#182548; --amber:#F2A33C; --amber-dark:#D6871F;
+  --success:#2E8B63; --danger:#C4573B; --bg:#F6F4EF; --card:#FFFFFF; --line:#E7E3D8; --muted:#6E7280;
+  --radius:16px; --radius-sm:10px; --shadow:0 8px 24px rgba(18,25,46,0.06);
+  --font-display:'Space Grotesk', sans-serif; --font-body:'Inter', sans-serif; --font-mono:'IBM Plex Mono', monospace;
+  --sidebar-w:230px;
+}
+*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{font-family:var(--font-body); background:var(--bg); color:var(--ink);}
+
+#app{display:flex; min-height:100vh;}
+
+/* ---------- Sidebar ---------- */
+.sidebar{
+  width:var(--sidebar-w); background:var(--navy); color:#fff; flex-shrink:0; position:fixed; top:0; bottom:0; left:0;
+  display:flex; flex-direction:column; padding:22px 14px; z-index:30; transition:left .25s ease;
+}
+.sidebar .brand{display:flex; align-items:center; gap:10px; padding:6px 10px 26px;}
+.sidebar .brand .mark{width:34px; height:34px; border-radius:50%; background:var(--amber); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; color:var(--ink); font-size:13px;}
+.sidebar .brand .txt{font-family:var(--font-display); font-weight:700; font-size:15.5px;}
+.sidebar .txt2{font-size:9.5px; color:rgba(255,255,255,0.5); font-family:var(--font-mono); letter-spacing:0.4px;}
+.side-nav{display:flex; flex-direction:column; gap:2px; flex:1;}
+.side-item{
+  display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:10px; cursor:pointer;
+  font-size:13.5px; font-weight:600; color:rgba(255,255,255,0.68);
+}
+.side-item .ic{font-size:16px; width:18px; text-align:center;}
+.side-item:hover{background:rgba(255,255,255,0.06);}
+.side-item.active{background:var(--amber); color:var(--ink);}
+.side-item .count{margin-left:auto; font-family:var(--font-mono); font-size:10.5px; background:rgba(255,255,255,0.14); padding:1px 7px; border-radius:6px;}
+.side-item.active .count{background:rgba(18,25,46,0.15); color:var(--ink);}
+.sidebar-foot{border-top:1px solid rgba(255,255,255,0.12); padding-top:14px; display:flex; align-items:center; gap:10px;}
+.sidebar-foot .av{width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.14); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;}
+.sidebar-foot .name{font-size:12px; font-weight:700;}
+.sidebar-foot .role{font-size:10px; color:rgba(255,255,255,0.5);}
+
+.overlay{display:none; position:fixed; inset:0; background:rgba(18,25,46,0.5); z-index:25;}
+.overlay.show{display:block;}
+
+/* ---------- Main ---------- */
+.main{margin-left:var(--sidebar-w); flex:1; min-width:0;}
+.topbar{
+  background:var(--card); border-bottom:1px solid var(--line); padding:16px 28px; display:flex; align-items:center;
+  justify-content:space-between; position:sticky; top:0; z-index:5;
+}
+.topbar h1{font-family:var(--font-display); font-size:19px; font-weight:700;}
+.topbar .sub{font-size:12px; color:var(--muted); margin-top:2px;}
+.hamburger{display:none; width:36px; height:36px; border-radius:10px; background:var(--bg); border:1px solid var(--line); align-items:center; justify-content:center; cursor:pointer; font-size:16px;}
+.topbar-right{display:flex; align-items:center; gap:10px;}
+.icon-btn{width:36px; height:36px; border-radius:10px; background:var(--bg); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; position:relative;}
+.icon-btn .badge-dot{position:absolute; top:5px; right:6px; width:7px; height:7px; border-radius:50%; background:var(--danger);}
+
+.page{padding:24px 28px 60px; max-width:1180px;}
+
+/* ---------- Buttons ---------- */
+.btn{border:none; border-radius:10px; padding:10px 16px; font-family:var(--font-body); font-weight:600; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px;}
+.btn-primary{background:var(--amber); color:var(--ink);}
+.btn-success{background:var(--success); color:#fff;}
+.btn-danger{background:transparent; color:var(--danger); border:1.5px solid var(--danger);}
+.btn-ghost{background:var(--bg); color:var(--ink); border:1px solid var(--line);}
+.btn-sm{padding:7px 12px; font-size:12px;}
+
+/* ---------- KPI ---------- */
+.kpi-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:26px;}
+.kpi-card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow);}
+.kpi-card .top{display:flex; justify-content:space-between; align-items:flex-start;}
+.kpi-card .ic{font-size:18px; opacity:0.7;}
+.kpi-card .num{font-family:var(--font-mono); font-weight:600; font-size:26px; color:var(--navy); margin-top:10px;}
+.kpi-card .lbl{font-size:12px; color:var(--muted); margin-top:4px; font-weight:600;}
+.kpi-card .delta{font-size:11px; font-weight:700; margin-top:8px;}
+.delta.up{color:var(--success);}
+.delta.down{color:var(--danger);}
+
+.grid-2{display:grid; grid-template-columns:1.4fr 1fr; gap:18px; margin-bottom:26px;}
+
+.card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);}
+.card h3{font-family:var(--font-display); font-size:14.5px; font-weight:700; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;}
+.card h3 .see-all{font-family:var(--font-body); font-weight:600; font-size:11.5px; color:var(--amber-dark); cursor:pointer;}
+
+/* mini bar chart */
+.bar-chart{display:flex; align-items:flex-end; gap:10px; height:120px; padding:0 4px;}
+.bar-col{flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;}
+.bar{width:100%; background:var(--amber); border-radius:5px 5px 0 0; min-height:4px;}
+.bar-col .lbl{font-size:9.5px; color:var(--muted); font-weight:600;}
+
+.activity-row{display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:12.5px;}
+.activity-row:last-child{border-bottom:none;}
+.activity-row .dot2{width:8px; height:8px; border-radius:50%; margin-top:5px; flex-shrink:0;}
+.activity-row .t2{color:var(--muted); font-size:11px; margin-top:2px;}
+
+/* ---------- Table ---------- */
+.table-wrap{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);}
+table{width:100%; border-collapse:collapse;}
+th{text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--muted); font-weight:700; padding:14px 18px; background:var(--bg); border-bottom:1px solid var(--line);}
+td{padding:14px 18px; font-size:13px; border-bottom:1px solid var(--line); vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr.clickable{cursor:pointer;}
+tr.clickable:hover{background:#FBFAF7;}
+.cell-name{font-weight:700;}
+.cell-sub{font-size:11px; color:var(--muted); margin-top:2px;}
+.pill{font-size:10.5px; font-weight:700; padding:4px 10px; border-radius:999px; white-space:nowrap; display:inline-block;}
+.pill-green{background:#EAF4EE; color:var(--success);}
+.pill-amber{background:#FCF0DC; color:var(--amber-dark);}
+.pill-red{background:#FBE9E5; color:var(--danger);}
+.pill-grey{background:#EDEEF3; color:var(--muted);}
+.avatar-sm{width:32px; height:32px; border-radius:50%; background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; font-family:var(--font-display);}
+.name-cell{display:flex; align-items:center; gap:10px;}
+.row-actions{display:flex; gap:6px;}
+
+.toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap:12px; flex-wrap:wrap;}
+.filter-row{display:flex; gap:8px; flex-wrap:wrap;}
+.chip{padding:8px 14px; border-radius:999px; border:1.5px solid var(--line); background:var(--card); font-size:12px; font-weight:600; color:var(--ink-soft); cursor:pointer; white-space:nowrap;}
+.chip.active{background:var(--navy); border-color:var(--navy); color:#fff;}
+.search-box{display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:9px 14px; min-width:220px;}
+.search-box input{border:none; outline:none; font-family:var(--font-body); font-size:13px; width:100%; background:transparent;}
+
+/* ---------- Detail drawer ---------- */
+.drawer-overlay{display:none; position:fixed; inset:0; background:rgba(18,25,46,0.45); z-index:40;}
+.drawer-overlay.show{display:block;}
+.drawer{
+  position:fixed; top:0; right:-420px; width:400px; max-width:92vw; height:100vh; background:var(--card); z-index:41;
+  transition:right .25s ease; overflow-y:auto; box-shadow:-10px 0 30px rgba(0,0,0,0.15);
+}
+.drawer.show{right:0;}
+.drawer-head{padding:20px 22px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
+.drawer-head h3{font-family:var(--font-display); font-size:16px;}
+.drawer-body{padding:22px;}
+.drawer-close{width:32px; height:32px; border-radius:50%; background:var(--bg); border:1px solid var(--line); cursor:pointer; font-size:14px;}
+.dr-field{margin-bottom:14px; font-size:13px;}
+.dr-field .k{color:var(--muted); font-size:11px; font-weight:700; text-transform:uppercase; margin-bottom:3px;}
+.dr-actions{display:flex; gap:8px; margin-top:20px;}
+.dr-actions .btn{flex:1;}
+
+/* ---------- Settings form ---------- */
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:12.5px; font-weight:700; color:var(--ink-soft); margin-bottom:7px;}
+.field input, .field select{width:100%; max-width:340px; border:1.5px solid var(--line); border-radius:10px; padding:11px 13px; font-family:var(--font-body); font-size:13.5px;}
+.field input:focus, .field select:focus{outline:none; border-color:var(--navy);}
+
+.empty{text-align:center; padding:50px 10px; color:var(--muted); font-size:13px;}
+
+/* ---------- Responsive ---------- */
+@media (max-width:900px){
+  .sidebar{left:-260px;}
+  .sidebar.show{left:0;}
+  .main{margin-left:0;}
+  .hamburger{display:flex;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .grid-2{grid-template-columns:1fr;}
+  .page{padding:18px 16px 60px;}
+  table{font-size:12px;}
+  th,td{padding:11px 12px;}
+}
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-thumb{background:var(--line); border-radius:8px;}
+</style>
+</head>
+<body>
+
+<div id="pin-gate" style="position:fixed; inset:0; z-index:9999; background:radial-gradient(circle at 30% 15%, #223267 0%, #182548 45%, #12192E 100%); display:flex; align-items:center; justify-content:center; padding:24px;">
+  <div style="width:100%; max-width:340px; text-align:center;">
+    <div style="width:64px; height:64px; border-radius:50%; background:#F2A33C; display:flex; align-items:center; justify-content:center; margin:0 auto 18px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; color:#12192E;">W</div>
+    <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#fff; margin-bottom:4px;">Espace Administration</div>
+    <div style="font-size:12.5px; color:rgba(255,255,255,0.55); margin-bottom:24px;">Accès réservé — entrez le code PIN</div>
+    <input type="password" id="pin-input" inputmode="numeric" placeholder="• • • •" maxlength="8"
+      style="width:100%; text-align:center; letter-spacing:6px; font-size:20px; padding:14px; border-radius:12px; border:1.5px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.08); color:#fff; margin-bottom:14px; font-family:'Space Grotesk',sans-serif;">
+    <button onclick="checkPin()" style="width:100%; padding:14px; border:none; border-radius:12px; background:#F2A33C; color:#12192E; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit;">Entrer</button>
+    <div id="pin-error" style="color:#F2A33C; font-size:12px; margin-top:12px; display:none;">Code incorrect, réessayez.</div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <div class="sidebar" id="sidebar">
+    <div class="brand"><div class="mark">W</div><div><div class="txt">walikhé</div><div class="txt2">ADMIN</div></div></div>
+    <div class="side-nav" id="side-nav"></div>
+    <div class="sidebar-foot">
+      <div class="av">DG</div>
+      <div><div class="name">Directeur Général</div><div class="role">Accès complet</div></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="hamburger" onclick="openSidebar()">☰</div>
+        <div><h1 id="page-title">Tableau de bord</h1><div class="sub" id="page-sub">Vue d'ensemble de la plateforme</div></div>
+      </div>
+      <div class="topbar-right">
+        <div class="icon-btn">🔔<span class="badge-dot"></span></div>
+        <div class="icon-btn">⚙️</div>
+      </div>
+    </div>
+    <div class="page" id="page"></div>
+  </div>
+
+  <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-head"><h3 id="drawer-title">Détail</h3><div class="drawer-close" onclick="closeDrawer()">✕</div></div>
+    <div class="drawer-body" id="drawer-body"></div>
+  </div>
+
+</div>
+
+<script>
+/* ============ DONNÉES DE DÉMONSTRATION ============ */
+const navSections = [
+  {id:'dashboard', ic:'📊', lbl:'Tableau de bord'},
+  {id:'users', ic:'👥', lbl:'Utilisateurs'},
+  {id:'pros', ic:'🛠', lbl:'Professionnels'},
+  {id:'services', ic:'📋', lbl:'Services'},
+  {id:'bookings', ic:'📅', lbl:'Réservations'},
+  {id:'reviews', ic:'⭐', lbl:'Avis'},
+  {id:'revenue', ic:'💰', lbl:'Revenus'},
+  {id:'settings', ic:'⚙️', lbl:'Paramètres'},
+];
+
+let users = [];
+let pros = [];
+let bookings = [];
+let reviews = [];
+let categories = [];
+const DEMO_CATEGORIES = [
+  {id:'elec', ic:'⚡', lbl:'Électricité'},
+  {id:'plomb', ic:'🔧', lbl:'Plomberie'},
+  {id:'meca', ic:'🚗', lbl:'Mécanique'},
+  {id:'bat', ic:'🧱', lbl:'Bâtiment'},
+  {id:'info', ic:'💻', lbl:'Informatique'},
+  {id:'net', ic:'🧹', lbl:'Nettoyage'},
+  {id:'autre', ic:'🛠', lbl:'Autres'},
+];
+let wkSettings = {commission:10, fraisUrgence:20000, email:'contact@walikhe.gn', telephone:'+224 6XX XX XX XX', pin:'2026'};
+
+let filters = {users:'all', pros:'all', bookings:'all', reviews:'all'};
+let currentPage = 'dashboard';
+let wkOnline = false;
+let _wkPollTimer = null;
+
+/* ============ FIREBASE (Walikhé) ============ */
+var WK_FB_KEY = 'AIzaSyAfHunjUEhNghi-t5rjXNuKyN9YuO2wqEk';
+var WK_FB_PID = 'walikhe-ccf06';
+var WK_FB_BASE = 'https://firestore.googleapis.com/v1/projects/' + WK_FB_PID + '/databases/(default)/documents/';
+
+function wkFetchTimeout(url, opts, ms) {
+  ms = ms || 8000;
+  var ctrl = new AbortController();
+  var timer = setTimeout(function(){ ctrl.abort(); }, ms);
+  return fetch(url, Object.assign({signal: ctrl.signal}, opts || {}))
+    .then(function(r){ clearTimeout(timer); return r; })
+    .catch(function(e){ clearTimeout(timer); throw e; });
+}
+function wkParse(fields) {
+  var o = {};
+  if (!fields) return o;
+  Object.keys(fields).forEach(function(k) {
+    var v = fields[k];
+    var val = v.stringValue !== undefined ? v.stringValue
+      : v.doubleValue !== undefined ? v.doubleValue
+      : v.integerValue !== undefined ? Number(v.integerValue)
+      : v.booleanValue !== undefined ? v.booleanValue : null;
+    if (typeof val === 'string' && val.length > 1 && (val[0]==='['||val[0]==='{')) {
+      try { val = JSON.parse(val); } catch(e) {}
+    }
+    o[k] = val;
+  });
+  return o;
+}
+function wkSerial(data) {
+  var f = {};
+  Object.keys(data).forEach(function(k) {
+    if (k==='_id') return;
+    var v = data[k];
+    if (v===null||v===undefined) f[k]={nullValue:null};
+    else if (typeof v==='number') f[k]={doubleValue:v};
+    else if (typeof v==='boolean') f[k]={booleanValue:v};
+    else if (Array.isArray(v)||(typeof v==='object')) f[k]={stringValue:JSON.stringify(v)};
+    else f[k]={stringValue:String(v)};
+  });
+  return f;
+}
+async function wkGetAll(col) {
+  var allDocs = [];
+  var pageToken = null;
+  do {
+    var url = WK_FB_BASE + col + '?key=' + WK_FB_KEY + '&pageSize=300';
+    if (pageToken) url += '&pageToken=' + pageToken;
+    var r = await wkFetchTimeout(url, {}, 15000);
+    if (!r.ok) throw new Error(col + ' error ' + r.status);
+    var j = await r.json();
+    pageToken = j.nextPageToken || null;
+    if (j.documents) {
+      var docs = j.documents.map(function(d) {
+        var o = wkParse(d.fields);
+        o._id = d.name.split('/').pop();
+        return o;
+      });
+      allDocs = allDocs.concat(docs);
+    }
+  } while (pageToken);
+  return allDocs;
+}
+async function wkPut(col, id, data) {
+  var url = WK_FB_BASE + col + '/' + id + '?key=' + WK_FB_KEY;
+  var r = await wkFetchTimeout(url, {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({fields: wkSerial(data)})
+  }, 8000);
+  if (!r.ok) throw new Error('put error ' + r.status);
+}
+async function wkDel(col, id) {
+  var url = WK_FB_BASE + col + '/' + id + '?key=' + WK_FB_KEY;
+  await wkFetchTimeout(url, {method:'DELETE'}, 8000);
+}
+function wkFormatDate(iso){
+  if(!iso) return 'Non précisée';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mi = String(d.getMinutes()).padStart(2,'0');
+  return `${dd}/${mm}/${d.getFullYear()} · ${hh}h${mi}`;
+}
+
+/* ============ CHARGEMENT DES DONNÉES ============ */
+async function wkLoadAll(){
+  try {
+    const [proDocs, demDocs, avisDocs, userDocs, catDocs] = await Promise.all([
+      wkGetAll('professionnels'), wkGetAll('demandes'), wkGetAll('avis'), wkGetAll('utilisateurs'), wkGetAll('categories')
+    ]);
+    pros = proDocs;
+    bookings = demDocs.sort((a,b)=>(b.id||0)-(a.id||0));
+    reviews = avisDocs;
+    users = userDocs.map(u => {
+      const mine = bookings.filter(b=>b.clientTelephone===u.telephone);
+      return {
+        id: u._id, nom: u.nom, telephone: u.telephone, ville: u.ville,
+        statut: u.statut || 'actif', bookings: mine.length,
+        joined: u.createdAt ? wkFormatDate(u.createdAt) : '—'
+      };
+    });
+    if (catDocs.length === 0) {
+      for (const c of DEMO_CATEGORIES) { await wkPut('categories', 'cat-' + c.id, c); }
+      categories = DEMO_CATEGORIES.slice();
+    } else {
+      categories = catDocs;
+    }
+    wkOnline = true;
+  } catch(e) {
+    console.log('Walikhé admin : Firebase indisponible.', e);
+    if (!categories.length) categories = DEMO_CATEGORIES.slice();
+    wkOnline = false;
+  }
+}
+async function loadSettings(){
+  if (!wkOnline) return;
+  try {
+    const docs = await wkGetAll('parametres');
+    const doc = docs.find(d=>d._id==='general');
+    if (doc) wkSettings = Object.assign({}, wkSettings, doc);
+  } catch(e) {}
+}
+function startPolling(){
+  if (_wkPollTimer) clearInterval(_wkPollTimer);
+  _wkPollTimer = setInterval(async ()=>{
+    if (!wkOnline) return;
+    await wkLoadAll();
+    renderSideNav();
+    if (currentPage==='dashboard') renderDashboard();
+    else if (currentPage==='users') renderUsersTable();
+    else if (currentPage==='pros') renderProsTable();
+    else if (currentPage==='bookings') renderBookings();
+    else if (currentPage==='reviews') renderReviews();
+    else if (currentPage==='revenue') renderRevenue();
+  }, 20000);
+}
+
+/* ============ NAVIGATION ============ */
+function renderSideNav(){
+  document.getElementById('side-nav').innerHTML = navSections.map(s=>{
+    let count = '';
+    if(s.id==='pros') count = pros.filter(p=>p.statut==='attente').length;
+    if(s.id==='reviews') count = reviews.filter(r=>r.statut==='signale').length;
+    return `<div class="side-item ${currentPage===s.id?'active':''}" onclick="goPage('${s.id}')">
+      <span class="ic">${s.ic}</span><span>${s.lbl}</span>
+      ${count ? `<span class="count">${count}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+function goPage(id){
+  currentPage = id;
+  renderSideNav();
+  closeSidebar();
+  const titles = {
+    dashboard:['Tableau de bord',"Vue d'ensemble de la plateforme"],
+    users:['Utilisateurs','Clients inscrits sur Walikhé'],
+    pros:['Professionnels','Validation et gestion des prestataires'],
+    services:['Services','Catégories proposées sur la plateforme'],
+    bookings:['Réservations','Historique des demandes de service'],
+    reviews:['Avis','Modération des avis clients'],
+    revenue:['Revenus','Performance financière de la plateforme'],
+    settings:['Paramètres','Configuration générale'],
+  };
+  document.getElementById('page-title').textContent = titles[id][0];
+  document.getElementById('page-sub').textContent = titles[id][1];
+  const renderers = {dashboard:renderDashboard, users:renderUsers, pros:renderPros, services:renderServices, bookings:renderBookings, reviews:renderReviews, revenue:renderRevenue, settings:renderSettings};
+  document.getElementById('page').innerHTML = '';
+  renderers[id]();
+  window.scrollTo(0,0);
+}
+function openSidebar(){ document.getElementById('sidebar').classList.add('show'); document.getElementById('overlay').classList.add('show'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('show'); document.getElementById('overlay').classList.remove('show'); }
+
+/* ============ TABLEAU DE BORD ============ */
+function renderDashboard(){
+  const activePros = pros.filter(p=>p.statut==='actif').length;
+  const todayISO = new Date().toISOString().slice(0,10);
+  const todayBookings = bookings.filter(b=>b.createdAt && b.createdAt.slice(0,10)===todayISO).length;
+  document.getElementById('page').innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="top"><span class="ic">👥</span></div><div class="num">${users.length}</div><div class="lbl">Utilisateurs inscrits</div></div>
+      <div class="kpi-card"><div class="top"><span class="ic">🛠</span></div><div class="num">${activePros}</div><div class="lbl">Professionnels actifs</div></div>
+      <div class="kpi-card"><div class="top"><span class="ic">📅</span></div><div class="num">${todayBookings}</div><div class="lbl">Réservations aujourd’hui</div></div>
+      <div class="kpi-card"><div class="top"><span class="ic">✅</span></div><div class="num">${bookings.filter(b=>b.statut===3).length}</div><div class="lbl">Missions terminées</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Réservations par statut <span class="see-all" onclick="goPage('bookings')">Voir tout</span></h3>
+        <div class="bar-chart" id="dash-chart"></div>
+      </div>
+      <div class="card">
+        <h3>Activité récente</h3>
+        <div id="dash-activity"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Professionnels en attente de validation <span class="see-all" onclick="goPage('pros')">Voir tout</span></h3>
+      <div id="dash-pending"></div>
+    </div>
+  `;
+  const statuts = [{l:'Attente',v:0},{l:'Acceptée',v:1},{l:'En cours',v:2},{l:'Terminée',v:3},{l:'Refusée',v:4}];
+  const counts = statuts.map(s=>({m:s.l, v: bookings.filter(b=>b.statut===s.v).length}));
+  const max = Math.max(1, ...counts.map(x=>x.v));
+  document.getElementById('dash-chart').innerHTML = counts.map(x=>`<div class="bar-col"><div class="bar" style="height:${(x.v/max*100)}px;"></div><div class="lbl">${x.m}</div></div>`).join('');
+
+  const activity = [];
+  bookings.slice(0,3).forEach(b=>{
+    activity.push({
+      c: b.statut===3?'#2E8B63':b.statut===4?'#C4573B':'#F2A33C',
+      t: b.statut===3?'Réservation terminée':b.statut===4?'Demande refusée':'Nouvelle demande',
+      d: `${b.clientNom||'?'} → ${b.proNom||'?'} · ${b.service||''}`
+    });
+  });
+  pros.filter(p=>p.statut==='attente').slice(0,2).forEach(p=>{
+    activity.push({c:'#F2A33C', t:'Nouveau professionnel inscrit', d: `${p.nom} · en attente de validation`});
+  });
+  reviews.filter(r=>r.statut==='signale').slice(0,2).forEach(r=>{
+    activity.push({c:'#C4573B', t:'Avis signalé', d: `Sur le profil de ${r.proNom||'?'}`});
+  });
+  document.getElementById('dash-activity').innerHTML = activity.length ? activity.slice(0,6).map(a=>`
+    <div class="activity-row"><div class="dot2" style="background:${a.c};"></div><div><div>${a.t}</div><div class="t2">${a.d}</div></div></div>`).join('') : '<div class="empty">Aucune activité récente.</div>';
+
+  const pending = pros.filter(p=>p.statut==='attente');
+  document.getElementById('dash-pending').innerHTML = pending.length ? `
+    <div class="table-wrap"><table><tbody>
+      ${pending.map(p=>`<tr>
+        <td><div class="name-cell"><div class="avatar-sm">${avatarHTML(p)}</div><div><div class="cell-name">${p.nom}</div><div class="cell-sub">${p.metier||''} · ${p.zone||''}</div></div></div></td>
+        <td style="text-align:right;"><div class="row-actions" style="justify-content:flex-end;">
+          <button class="btn btn-danger btn-sm" onclick="setProStatus(${p.id},'refuse')">Refuser</button>
+          <button class="btn btn-success btn-sm" onclick="setProStatus(${p.id},'actif')">Valider</button>
+        </div></td>
+      </tr>`).join('')}
+    </tbody></table></div>` : '<div class="empty">Aucun professionnel en attente.</div>';
+}
+
+/* ============ UTILISATEURS ============ */
+function renderUsers(){
+  document.getElementById('page').innerHTML = `
+    <div class="toolbar">
+      <div class="filter-row" id="users-filter"></div>
+      <div class="search-box">🔍 <input placeholder="Rechercher un utilisateur…" oninput="renderUsersTable()" id="users-search"></div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Client</th><th>Adresse</th><th>Réservations</th><th>Statut</th><th>Inscrit le</th><th></th></tr></thead>
+      <tbody id="users-tbody"></tbody>
+    </table></div>
+  `;
+  document.getElementById('users-filter').innerHTML = ['all','actif','suspendu'].map(f=>`
+    <div class="chip ${filters.users===f?'active':''}" onclick="filters.users='${f}'; renderUsers();">${f==='all'?'Tous':f==='actif'?'Actifs':'Suspendus'}</div>`).join('');
+  renderUsersTable();
+}
+function renderUsersTable(){
+  const q = (document.getElementById('users-search')?.value || '').toLowerCase();
+  const list = users.filter(u => (filters.users==='all'||u.statut===filters.users) && (u.nom||'').toLowerCase().includes(q));
+  document.getElementById('users-tbody').innerHTML = list.length ? list.map(u=>`
+    <tr class="clickable" onclick="openUserDrawer('${u.id}')">
+      <td><div class="name-cell"><div class="avatar-sm">${initials(u.nom)}</div><div><div class="cell-name">${u.nom}</div><div class="cell-sub">${u.telephone}</div></div></div></td>
+      <td>${u.ville||'—'}</td>
+      <td>${u.bookings}</td>
+      <td><span class="pill ${u.statut==='actif'?'pill-green':'pill-red'}">${u.statut==='actif'?'Actif':'Suspendu'}</span></td>
+      <td>${u.joined}</td>
+      <td style="text-align:right; color:var(--muted);">›</td>
+    </tr>`).join('') : `<tr><td colspan="6"><div class="empty">Aucun utilisateur trouvé.</div></td></tr>`;
+}
+function openUserDrawer(id){
+  const u = users.find(x=>String(x.id)===String(id));
+  if(!u) return;
+  document.getElementById('drawer-title').textContent = u.nom;
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="dr-field"><div class="k">Téléphone</div>${u.telephone}</div>
+    <div class="dr-field"><div class="k">Adresse</div>${u.ville||'—'}</div>
+    <div class="dr-field"><div class="k">Réservations effectuées</div>${u.bookings}</div>
+    <div class="dr-field"><div class="k">Membre depuis</div>${u.joined}</div>
+    <div class="dr-field"><div class="k">Statut</div><span class="pill ${u.statut==='actif'?'pill-green':'pill-red'}">${u.statut==='actif'?'Actif':'Suspendu'}</span></div>
+    <div class="dr-actions">
+      ${u.statut==='actif'
+        ? `<button class="btn btn-danger" onclick="setUserStatus('${u.id}','suspendu')">Suspendre le compte</button>`
+        : `<button class="btn btn-success" onclick="setUserStatus('${u.id}','actif')">Réactiver le compte</button>`}
+    </div>
+  `;
+  openDrawer();
+}
+async function setUserStatus(id, statut){
+  const u = users.find(x=>String(x.id)===String(id)); if(!u) return;
+  u.statut = statut; closeDrawer(); renderUsersTable();
+  if (wkOnline) { try { await wkPut('utilisateurs', id, {telephone:u.telephone, nom:u.nom, ville:u.ville, statut}); } catch(e){ console.log(e); } }
+}
+
+/* ============ PROFESSIONNELS ============ */
+function renderPros(){
+  document.getElementById('page').innerHTML = `
+    <div class="toolbar">
+      <div class="filter-row" id="pros-filter"></div>
+      <div class="search-box">🔍 <input placeholder="Rechercher un professionnel…" oninput="renderProsTable()" id="pros-search"></div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Professionnel</th><th>Catégorie</th><th>Note</th><th>Missions</th><th>Statut</th><th></th></tr></thead>
+      <tbody id="pros-tbody"></tbody>
+    </table></div>
+  `;
+  document.getElementById('pros-filter').innerHTML = [
+    {id:'all',l:'Tous'},{id:'actif',l:'Actifs'},{id:'attente',l:'En attente'},{id:'refuse',l:'Refusés'}
+  ].map(f=>`<div class="chip ${filters.pros===f.id?'active':''}" onclick="filters.pros='${f.id}'; renderPros();">${f.l}</div>`).join('');
+  renderProsTable();
+}
+function renderProsTable(){
+  const q = (document.getElementById('pros-search')?.value || '').toLowerCase();
+  const list = pros.filter(p => (filters.pros==='all'||p.statut===filters.pros) && (p.nom||'').toLowerCase().includes(q));
+  const pillFor = s => s==='actif' ? 'pill-green' : s==='attente' ? 'pill-amber' : 'pill-red';
+  const lblFor = s => s==='actif' ? 'Actif' : s==='attente' ? 'En attente' : 'Refusé';
+  const catLbl = c => (categories.find(x=>x.id===c)||{}).lbl || c || '—';
+  document.getElementById('pros-tbody').innerHTML = list.length ? list.map(p=>`
+    <tr class="clickable" onclick="openProDrawer(${p.id})">
+      <td><div class="name-cell"><div class="avatar-sm">${avatarHTML(p)}</div><div><div class="cell-name">${p.nom} ${p.certifie?'🏅':''}</div><div class="cell-sub">${p.metier||''}</div></div></div></td>
+      <td>${catLbl(p.categorie)}</td>
+      <td>${p.note>0 ? '★ '+p.note : '—'}</td>
+      <td>${p.missions||0}</td>
+      <td><span class="pill ${pillFor(p.statut)}">${lblFor(p.statut)}</span></td>
+      <td style="text-align:right; color:var(--muted);">›</td>
+    </tr>`).join('') : `<tr><td colspan="6"><div class="empty">Aucun professionnel trouvé.</div></td></tr>`;
+}
+function openProDrawer(id){
+  const p = pros.find(x=>x.id===id); if(!p) return;
+  const catLbl = (categories.find(x=>x.id===p.categorie)||{}).lbl || p.categorie || '—';
+  document.getElementById('drawer-title').textContent = p.nom;
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="dr-field"><div class="k">Métier</div>${p.metier||'—'}</div>
+    <div class="dr-field"><div class="k">Catégorie</div>${catLbl}</div>
+    <div class="dr-field"><div class="k">Téléphone</div>${p.telephone||'—'}</div>
+    <div class="dr-field"><div class="k">Zone d'intervention</div>${p.zone||'—'}</div>
+    <div class="dr-field"><div class="k">Note moyenne</div>${p.note>0 ? '★ '+p.note : 'Pas encore noté'}</div>
+    <div class="dr-field"><div class="k">Missions réalisées</div>${p.missions||0}</div>
+    <div class="dr-field"><div class="k">Badge Walikhé Certifié</div>${p.certifie ? '🏅 Oui' : 'Non attribué'}</div>
+    <div class="dr-actions">
+      ${p.statut==='attente' ? `
+        <button class="btn btn-danger" onclick="setProStatus(${p.id},'refuse')">Refuser</button>
+        <button class="btn btn-success" onclick="setProStatus(${p.id},'actif')">Valider</button>
+      ` : p.statut==='actif' ? `
+        <button class="btn btn-danger" onclick="setProStatus(${p.id},'refuse')">Suspendre</button>
+        ${!p.certifie ? `<button class="btn btn-primary" onclick="toggleCertified(${p.id})">Attribuer 🏅 Walikhé Certifié</button>` : ''}
+      ` : `<button class="btn btn-success" onclick="setProStatus(${p.id},'actif')">Réactiver</button>`}
+    </div>
+  `;
+  openDrawer();
+}
+async function setProStatus(id, statut){
+  const p = pros.find(x=>x.id===id); if(!p) return;
+  p.statut = statut; closeDrawer();
+  if(currentPage==='pros') renderProsTable(); else renderDashboard();
+  renderSideNav();
+  if (wkOnline) { try { await wkPut('professionnels', 'pro-'+id, p); } catch(e){ console.log(e); } }
+}
+async function toggleCertified(id){
+  const p = pros.find(x=>x.id===id); if(!p) return;
+  p.certifie = true;
+  openProDrawer(id);
+  if (wkOnline) { try { await wkPut('professionnels', 'pro-'+id, p); } catch(e){ console.log(e); } }
+}
+
+/* ============ SERVICES ============ */
+function renderServices(){
+  document.getElementById('page').innerHTML = `
+    <div class="toolbar"><div></div><button class="btn btn-primary" onclick="openCategoryDrawer(null)">+ Ajouter une catégorie</button></div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);" id="services-grid"></div>
+  `;
+  document.getElementById('services-grid').innerHTML = categories.map(c=>{
+    const count = pros.filter(p=>p.categorie===c.id && p.statut==='actif').length;
+    return `
+    <div class="kpi-card">
+      <div class="top"><span class="ic">${c.ic}</span></div>
+      <div class="num" style="font-size:18px;">${c.lbl}</div>
+      <div class="lbl">${count} professionnel${count>1?'s':''}</div>
+      <div class="dr-actions" style="margin-top:14px;">
+        <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="openCategoryDrawer('${c.id}')">Modifier</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openCategoryDrawer(id){
+  const c = id ? categories.find(x=>x.id===id) : null;
+  document.getElementById('drawer-title').textContent = c ? 'Modifier la catégorie' : 'Nouvelle catégorie';
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="field"><label>Icône (emoji)</label><input type="text" id="cat-ic" value="${c ? c.ic : ''}" placeholder="Ex : ⚡" maxlength="4"></div>
+    <div class="field"><label>Nom de la catégorie</label><input type="text" id="cat-lbl" value="${c ? c.lbl : ''}" placeholder="Ex : Électricité"></div>
+    ${!c ? `<div class="field"><label>Identifiant (sans espace, sans accent)</label><input type="text" id="cat-id" placeholder="Ex : jardinage"></div>` : ''}
+    <div class="dr-actions">
+      ${c ? `<button class="btn btn-danger" onclick="deleteCategoryDrawer('${c.id}')">Supprimer</button>` : ''}
+      <button class="btn btn-primary" onclick="saveCategoryDrawer(${c ? `'${c.id}'` : 'null'})">Enregistrer</button>
+    </div>
+  `;
+  openDrawer();
+}
+async function saveCategoryDrawer(existingId){
+  const ic = document.getElementById('cat-ic').value.trim() || '🛠';
+  const lbl = document.getElementById('cat-lbl').value.trim();
+  if (!lbl) { alert('Merci de donner un nom à la catégorie.'); return; }
+  let id = existingId;
+  if (!id) {
+    const raw = document.getElementById('cat-id').value.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    id = raw || ('cat' + Date.now());
+    if (categories.find(x=>x.id===id)) { alert('Cet identifiant existe déjà, choisis-en un autre.'); return; }
+  }
+  const cat = {id, ic, lbl};
+  const idx = categories.findIndex(x=>x.id===id);
+  if (idx>-1) categories[idx] = cat; else categories.push(cat);
+  closeDrawer();
+  renderServices();
+  if (wkOnline) { try { await wkPut('categories', 'cat-'+id, cat); } catch(e){ console.log(e); } }
+}
+async function deleteCategoryDrawer(id){
+  const count = pros.filter(p=>p.categorie===id).length;
+  if (count > 0 && !confirm(`${count} professionnel(s) utilisent cette catégorie. La supprimer quand même ?`)) return;
+  categories = categories.filter(x=>x.id!==id);
+  closeDrawer();
+  renderServices();
+  if (wkOnline) { try { await wkDel('categories', 'cat-'+id); } catch(e){ console.log(e); } }
+}
+
+/* ============ RÉSERVATIONS ============ */
+function renderBookings(){
+  document.getElementById('page').innerHTML = `
+    <div class="toolbar"><div class="filter-row" id="bookings-filter"></div></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Réf.</th><th>Client</th><th>Professionnel</th><th>Service</th><th>Date souhaitée</th><th>Montant</th><th>Statut</th></tr></thead>
+      <tbody id="bookings-tbody"></tbody>
+    </table></div>
+  `;
+  document.getElementById('bookings-filter').innerHTML = [
+    {id:'all',l:'Toutes'},{id:0,l:'En attente'},{id:1,l:'Acceptées'},{id:2,l:'En cours'},{id:3,l:'Terminées'},{id:4,l:'Refusées'}
+  ].map(f=>`<div class="chip ${filters.bookings===f.id?'active':''}" onclick="setBookingsFilter('${f.id}')">${f.l}</div>`).join('');
+  const pillFor = {0:'pill-amber', 1:'pill-amber', 2:'pill-amber', 3:'pill-green', 4:'pill-red'};
+  const lblFor = {0:'En attente', 1:'Acceptée', 2:'En cours', 3:'Terminée', 4:'Refusée'};
+  const list = bookings.filter(b => filters.bookings==='all' || b.statut===filters.bookings);
+  document.getElementById('bookings-tbody').innerHTML = list.length ? list.map(b=>`
+    <tr class="clickable" onclick="openBookingDrawer(${b.id})">
+      <td class="cell-sub" style="font-family:var(--font-mono);">#${String(b.id).slice(-6)}</td>
+      <td>${b.clientNom||'—'}</td><td>${b.proNom||'—'}</td><td>${b.service||'—'}</td><td>${wkFormatDate(b.date)}</td>
+      <td style="font-family:var(--font-mono);">${b.montant ? Number(b.montant).toLocaleString('fr-FR')+' GNF' : '—'}</td>
+      <td><span class="pill ${pillFor[b.statut]||'pill-amber'}">${lblFor[b.statut]||'—'}</span></td>
+    </tr>`).join('') : `<tr><td colspan="7"><div class="empty">Aucune réservation dans cette catégorie.</div></td></tr>`;
+}
+function openBookingDrawer(id){
+  const b = bookings.find(x=>x.id===id); if(!b) return;
+  const lblFor = {0:'En attente', 1:'Acceptée', 2:'En cours', 3:'Terminée', 4:'Refusée'};
+  document.getElementById('drawer-title').textContent = 'Réservation #' + String(b.id).slice(-6);
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="dr-field"><div class="k">Client</div>${b.clientNom||'—'} · ${b.clientTelephone||'—'}</div>
+    <div class="dr-field"><div class="k">Professionnel</div>${b.proNom||'—'}</div>
+    <div class="dr-field"><div class="k">Service</div>${b.service||'—'}</div>
+    <div class="dr-field"><div class="k">Description initiale</div>${b.description||'—'}</div>
+    <div class="dr-field"><div class="k">Adresse</div>${b.adresse||'—'}</div>
+    <div class="dr-field"><div class="k">Date souhaitée</div>${wkFormatDate(b.date)}</div>
+    <div class="dr-field"><div class="k">Statut</div><span class="pill ${b.statut===3?'pill-green':b.statut===4?'pill-red':'pill-amber'}">${lblFor[b.statut]||'—'}</span></div>
+    ${b.montant ? `<div class="dr-field"><div class="k">Montant payé</div>${Number(b.montant).toLocaleString('fr-FR')} GNF · ${b.moyenPaiement||'—'}</div>` : ''}
+    ${b.rapport ? `<div class="dr-field"><div class="k">Rapport du professionnel</div>${b.rapport}</div>` : ''}
+  `;
+  openDrawer();
+}
+function setBookingsFilter(id){ filters.bookings = id==='all' ? 'all' : Number(id); renderBookings(); }
+
+/* ============ AVIS ============ */
+function renderReviews(){
+  document.getElementById('page').innerHTML = `
+    <div class="toolbar"><div class="filter-row" id="reviews-filter"></div></div>
+    <div id="reviews-list"></div>
+  `;
+  document.getElementById('reviews-filter').innerHTML = [
+    {id:'all',l:'Tous'},{id:'publie',l:'Publiés'},{id:'signale',l:'Signalés'}
+  ].map(f=>`<div class="chip ${filters.reviews===f.id?'active':''}" onclick="filters.reviews='${f.id}'; renderReviews();">${f.l}</div>`).join('');
+  const list = reviews.filter(r => filters.reviews==='all' || r.statut===filters.reviews);
+  document.getElementById('reviews-list').innerHTML = list.length ? `<div class="table-wrap"><table><tbody>
+    ${list.map(r=>`<tr>
+      <td style="width:36%;"><div class="cell-name">${r.clientNom||'—'} → ${r.proNom||'—'}</div><div class="cell-sub">${'★'.repeat(r.note||0)}${'☆'.repeat(5-(r.note||0))} · "${r.texte||''}"</div></td>
+      <td><span class="pill ${r.statut==='signale'?'pill-red':r.statut==='masque'?'pill-grey':'pill-green'}">${r.statut==='signale'?'Signalé':r.statut==='masque'?'Masqué':'Publié'}</span></td>
+      <td style="text-align:right;"><div class="row-actions" style="justify-content:flex-end;">
+        ${r.statut==='signale'
+          ? `<button class="btn btn-danger btn-sm" onclick="setReviewStatus(${r.id},'masque')">Masquer</button><button class="btn btn-success btn-sm" onclick="setReviewStatus(${r.id},'publie')">Republier</button>`
+          : r.statut==='masque'
+          ? `<button class="btn btn-success btn-sm" onclick="setReviewStatus(${r.id},'publie')">Republier</button>`
+          : `<button class="btn btn-ghost btn-sm" onclick="setReviewStatus(${r.id},'masque')">Masquer</button>`}
+      </div></td>
+    </tr>`).join('')}
+  </tbody></table></div>` : '<div class="empty">Aucun avis dans cette catégorie.</div>';
+}
+async function setReviewStatus(id, statut){
+  const r = reviews.find(x=>x.id===id); if(!r) return;
+  r.statut = statut; renderReviews(); renderSideNav();
+  if (wkOnline) { try { await wkPut('avis', 'avis-'+id, r); } catch(e){ console.log(e); } }
+}
+
+/* ============ REVENUS ============ */
+function renderRevenue(){
+  const done = bookings.filter(b=>b.statut===3 && b.montant);
+  const totalGlobal = done.reduce((s,b)=>s+Number(b.montant||0),0);
+  const commission = Math.round(totalGlobal * (wkSettings.commission||0) / 100);
+  const panierMoyen = done.length ? Math.round(totalGlobal/done.length) : 0;
+  document.getElementById('page').innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="num">${totalGlobal.toLocaleString('fr-FR')}</div><div class="lbl">Volume total généré (GNF)</div></div>
+      <div class="kpi-card"><div class="num" style="color:var(--success);">${commission.toLocaleString('fr-FR')}</div><div class="lbl">Revenu de la plateforme (${wkSettings.commission||0}%)</div></div>
+      <div class="kpi-card"><div class="num">${done.length}</div><div class="lbl">Réservations payées</div></div>
+      <div class="kpi-card"><div class="num">${panierMoyen.toLocaleString('fr-FR')}</div><div class="lbl">Panier moyen (GNF)</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card"><h3>Revenus par mois</h3><div class="bar-chart" id="rev-chart"></div></div>
+      <div class="card"><h3>Meilleurs professionnels</h3><div id="top-pros"></div></div>
+    </div>
+  `;
+  const monthsMap = {};
+  done.forEach(b=>{
+    if(!b.updatedAt) return;
+    const key = new Date(b.updatedAt).toLocaleDateString('fr-FR',{month:'short'});
+    monthsMap[key] = (monthsMap[key]||0) + Number(b.montant||0);
+  });
+  const entries = Object.entries(monthsMap);
+  const max = Math.max(1, ...entries.map(x=>x[1]));
+  document.getElementById('rev-chart').innerHTML = entries.length ? entries.map(([m,v])=>`<div class="bar-col"><div class="bar" style="height:${(v/max*100)}px;"></div><div class="lbl">${m}</div></div>`).join('') : '<div class="empty">Pas encore de données.</div>';
+
+  const revenuParPro = {};
+  done.forEach(b=>{ revenuParPro[b.proNom] = (revenuParPro[b.proNom]||0) + Number(b.montant||0); });
+  const top = Object.entries(revenuParPro).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  document.getElementById('top-pros').innerHTML = top.length ? top.map(([nom,v],i)=>`
+    <div class="activity-row"><div style="font-family:var(--font-mono); font-weight:600; color:var(--amber-dark); width:18px;">${i+1}</div>
+    <div style="flex:1;"><div class="cell-name">${nom}</div><div class="t2">${v.toLocaleString('fr-FR')} GNF générés</div></div></div>`).join('') : '<div class="empty">Pas encore de données.</div>';
+}
+
+/* ============ PARAMÈTRES ============ */
+function renderSettings(){
+  document.getElementById('page').innerHTML = `
+    <div class="card" style="max-width:520px;">
+      <h3>Commissions & tarification</h3>
+      <div class="field"><label>Commission plateforme (%)</label><input type="number" id="st-commission" value="${wkSettings.commission}"></div>
+      <div class="field"><label>Frais de service urgence (GNF)</label><input type="number" id="st-frais" value="${wkSettings.fraisUrgence}"></div>
+      <div class="field"><label>Devise</label><select><option>GNF — Franc guinéen</option></select></div>
+    </div>
+    <div class="card" style="max-width:520px; margin-top:18px;">
+      <h3>Coordonnées de la plateforme</h3>
+      <div class="field"><label>E-mail de contact</label><input type="text" id="st-email" value="${wkSettings.email}"></div>
+      <div class="field"><label>Téléphone support</label><input type="text" id="st-tel" value="${wkSettings.telephone}"></div>
+    </div>
+    <div class="card" style="max-width:520px; margin-top:18px;">
+      <h3>Sécurité</h3>
+      <div class="field"><label>Code PIN d'accès à l'administration</label><input type="text" id="st-pin" value="${wkSettings.pin}" maxlength="8"></div>
+      <p style="color:var(--muted); font-size:11.5px;">Demandé à chaque ouverture de cette appli. Change-le régulièrement et ne le partage qu'avec les personnes de confiance.</p>
+    </div>
+    <button class="btn btn-primary" style="margin-top:6px;" onclick="saveSettings()">Enregistrer</button>
+
+    <div class="card" style="max-width:520px; margin-top:32px; border-color:var(--danger);">
+      <h3 style="color:var(--danger);">⚠️ Zone de réinitialisation</h3>
+      <p style="color:var(--muted); font-size:12.5px; margin-bottom:14px;">
+        Efface définitivement toutes les demandes, tous les professionnels, avis et utilisateurs de test.
+        Les catégories et paramètres sont conservés. Action irréversible — à utiliser uniquement avant un vrai lancement.
+      </p>
+      <button class="btn btn-danger" onclick="resetAllData()">🗑 Réinitialiser toutes les données</button>
+    </div>
+  `;
+}
+async function resetAllData(){
+  if (!wkOnline) { alert('Connexion Firebase requise pour réinitialiser.'); return; }
+  if (!confirm('Ceci va effacer DÉFINITIVEMENT tous les professionnels, demandes, avis et utilisateurs. Continuer ?')) return;
+  const typed = prompt('Pour confirmer, tape RESET en majuscules :');
+  if (typed !== 'RESET') { alert('Réinitialisation annulée.'); return; }
+
+  try {
+    for (const col of ['professionnels','demandes','avis','utilisateurs']) {
+      const docs = await wkGetAll(col);
+      for (const d of docs) { await wkDel(col, d._id); }
+    }
+    alert('Toutes les données de test ont été effacées. La page va se recharger.');
+    location.reload();
+  } catch(e) {
+    alert('Erreur pendant la réinitialisation : ' + e.message);
+  }
+}
+async function saveSettings(){
+  const newPin = document.getElementById('st-pin').value.trim();
+  if (!newPin) { alert('Le code PIN ne peut pas être vide.'); return; }
+  wkSettings = {
+    commission: Number(document.getElementById('st-commission').value)||0,
+    fraisUrgence: Number(document.getElementById('st-frais').value)||0,
+    email: document.getElementById('st-email').value.trim(),
+    telephone: document.getElementById('st-tel').value.trim(),
+    pin: newPin,
+  };
+  if (wkOnline) {
+    try { await wkPut('parametres', 'general', wkSettings); alert('Paramètres enregistrés.'); }
+    catch(e) { alert('Erreur d’enregistrement. Vérifiez votre connexion.'); }
+  } else {
+    alert('Paramètres enregistrés localement (hors connexion).');
+  }
+}
+
+/* ============ UTILITAIRES ============ */
+function initials(name){ return (name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+function avatarHTML(p){
+  return p.photo ? `<img src="${p.photo}" alt="${p.nom}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : initials(p.nom);
+}
+function openDrawer(){ document.getElementById('drawer').classList.add('show'); document.getElementById('drawer-overlay').classList.add('show'); }
+function closeDrawer(){ document.getElementById('drawer').classList.remove('show'); document.getElementById('drawer-overlay').classList.remove('show'); }
+
+/* ============ PIN D'ACCÈS ============ */
+async function wkPinGateInit(){
+  try {
+    const docs = await wkGetAll('parametres');
+    const doc = docs.find(d=>d._id==='general');
+    if (doc && doc.pin) wkSettings.pin = doc.pin;
+  } catch(e) { /* hors ligne : garde le PIN par défaut */ }
+}
+function checkPin(){
+  const val = document.getElementById('pin-input').value.trim();
+  if (val && val === String(wkSettings.pin)) {
+    document.getElementById('pin-gate').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    wkAdminInit();
+  } else {
+    document.getElementById('pin-error').style.display = 'block';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+  }
+}
+document.getElementById('pin-input').addEventListener('keydown', function(e){ if (e.key === 'Enter') checkPin(); });
+wkPinGateInit();
+
+/* ============ INIT ============ */
+async function wkAdminInit(){
+  await wkLoadAll();
+  await loadSettings();
+  renderSideNav();
+  renderDashboard();
+  startPolling();
+}
+</script>
+</body>
+</html>
