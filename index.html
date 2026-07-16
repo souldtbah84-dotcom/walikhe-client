@@ -102,7 +102,7 @@ body{
 .content{padding:0 20px 100px; flex:1;}
 
 .bottom-nav{
-  position:absolute; bottom:0; left:0; right:0; height:74px;
+  position:sticky; bottom:0; left:0; right:0; height:74px; flex-shrink:0;
   background:var(--card); border-top:1px solid var(--line);
   display:flex; align-items:center; justify-content:space-around;
   padding-bottom:8px; z-index:10;
@@ -821,6 +821,7 @@ function renderTracking(){
       </div>
       <div style="font-weight:700; font-size:15px;">${b.proNom}</div>
       <div style="color:var(--muted); font-size:12.5px;">${b.service} · ${b.adresse}</div>
+      ${b.statut===3 && b.montant ? `<div style="margin-top:10px; font-family:var(--font-mono); font-weight:600; color:var(--success);">💰 ${Number(b.montant).toLocaleString('fr-FR')} GNF payé${b.moyenPaiement ? ' · '+b.moyenPaiement : ''}</div>` : ''}
     </div>
     <div class="steps">
       ${steps.map((s,i)=>`
