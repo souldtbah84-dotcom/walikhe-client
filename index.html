@@ -449,7 +449,8 @@ async function wkDel(col, id) {
 }
 
 /* ============ DONNÉES ============ */
-const categories = [
+let categories = [];
+const DEMO_CATEGORIES = [
   {id:'elec', ic:'⚡', lbl:'Électricité'},
   {id:'plomb', ic:'🔧', lbl:'Plomberie'},
   {id:'meca', ic:'🚗', lbl:'Mécanique'},
@@ -523,6 +524,18 @@ async function wkInit(){
       avisList = DEMO_AVIS.slice();
     }
   } catch(e) { avisList = DEMO_AVIS.slice(); }
+  try {
+    if (wkOnline) {
+      let cl = await wkGetAll('categories');
+      if (cl.length === 0) {
+        for (const c of DEMO_CATEGORIES) { await wkPut('categories', 'cat-' + c.id, c); }
+        cl = DEMO_CATEGORIES.slice();
+      }
+      categories = cl;
+    } else {
+      categories = DEMO_CATEGORIES.slice();
+    }
+  } catch(e) { categories = DEMO_CATEGORIES.slice(); }
 
   if (localStorage.getItem('wk_client_phone')) { await loadMyBookings(); }
   const active = document.querySelector('.screen.active');
@@ -822,6 +835,7 @@ function renderTracking(){
       <div style="font-weight:700; font-size:15px;">${b.proNom}</div>
       <div style="color:var(--muted); font-size:12.5px;">${b.service} · ${b.adresse}</div>
       ${b.statut===3 && b.montant ? `<div style="margin-top:10px; font-family:var(--font-mono); font-weight:600; color:var(--success);">💰 ${Number(b.montant).toLocaleString('fr-FR')} GNF payé${b.moyenPaiement ? ' · '+b.moyenPaiement : ''}</div>` : ''}
+      ${b.statut===3 && b.rapport ? `<div class="info-card" style="margin-top:12px; text-align:left;"><h3>📋 Rapport du professionnel</h3><p>${b.rapport}</p></div>` : ''}
     </div>
     <div class="steps">
       ${steps.map((s,i)=>`
