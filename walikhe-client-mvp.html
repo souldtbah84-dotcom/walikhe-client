@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Walikhé — Le bon ouvrier, au bon moment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#12192E;
+  --ink-soft:#2B3350;
+  --navy:#182548;
+  --amber:#F2A33C;
+  --amber-dark:#D6871F;
+  --success:#2E8B63;
+  --danger:#C4573B;
+  --bg:#F6F4EF;
+  --card:#FFFFFF;
+  --line:#E7E3D8;
+  --muted:#6E7280;
+  --radius:16px;
+  --radius-sm:10px;
+  --shadow:0 8px 24px rgba(18,25,46,0.08);
+  --font-display:'Space Grotesk', sans-serif;
+  --font-body:'Inter', sans-serif;
+  --font-mono:'IBM Plex Mono', monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  font-family:var(--font-body);
+  background:var(--ink);
+  color:var(--ink);
+  display:flex;
+  justify-content:center;
+  overflow:hidden;
+}
+#app{
+  width:100%;
+  max-width:480px;
+  height:100vh;
+  height:100dvh;
+  background:var(--bg);
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 0 60px rgba(0,0,0,0.4);
+}
+.screen{
+  position:absolute;
+  inset:0;
+  display:none;
+  flex-direction:column;
+  overflow-y:auto;
+  animation:fade .25s ease;
+}
+.screen.active{display:flex;}
+@keyframes fade{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+/* ---------- Splash ---------- */
+#screen-splash{
+  background:radial-gradient(circle at 30% 20%, #223267 0%, var(--navy) 45%, var(--ink) 100%);
+  color:#fff;
+  justify-content:space-between;
+  align-items:center;
+  text-align:center;
+  padding:64px 32px 48px;
+}
+.splash-mark{
+  display:flex; flex-direction:column; align-items:center; gap:18px;
+  margin-top:auto; margin-bottom:auto;
+}
+.ring-logo{width:104px; height:104px; position:relative;}
+.ring-logo svg{width:100%; height:100%;}
+.brand-name{font-family:var(--font-display); font-weight:700; font-size:30px; letter-spacing:-0.5px;}
+.brand-tagline{font-family:var(--font-mono); font-size:12.5px; letter-spacing:0.5px; color:var(--amber); opacity:0.95;}
+.splash-actions{width:100%; display:flex; flex-direction:column; gap:12px;}
+
+/* ---------- Buttons ---------- */
+.btn{
+  border:none; border-radius:999px; padding:15px 20px; font-family:var(--font-body);
+  font-weight:600; font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+  transition:transform .12s ease, opacity .12s ease;
+}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:var(--amber); color:var(--ink);}
+.btn-primary:hover{background:var(--amber-dark);}
+.btn-outline{background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,0.4);}
+.btn-dark{background:var(--navy); color:#fff;}
+.btn-ghost{background:var(--line); color:var(--ink);}
+.btn-block{width:100%;}
+.btn-sm{padding:10px 16px; font-size:13.5px;}
+
+/* ---------- Top bar & bottom nav ---------- */
+.topbar{
+  padding:20px 20px 14px; display:flex; align-items:center; justify-content:space-between;
+  background:var(--bg); position:sticky; top:0; z-index:5;
+}
+.topbar h1{font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--ink);}
+.back-btn{width:36px; height:36px; border-radius:50%; background:var(--card); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px;}
+
+.content{padding:0 20px 100px; flex:1;}
+
+.bottom-nav{
+  position:absolute; bottom:0; left:0; right:0; height:74px;
+  background:var(--card); border-top:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-around;
+  padding-bottom:8px; z-index:10;
+}
+.nav-item{
+  display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10.5px; color:var(--muted);
+  font-weight:600; cursor:pointer; width:56px;
+}
+.nav-item .ic{font-size:20px;}
+.nav-item.active{color:var(--navy);}
+.nav-item.active .ic{filter:none;}
+
+/* ---------- Search bar ---------- */
+.search-bar{
+  display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--line);
+  border-radius:var(--radius); padding:13px 16px; margin:10px 0 20px; box-shadow:var(--shadow); cursor:pointer;
+}
+.search-bar span.ic{font-size:16px;}
+.search-bar span.txt{color:var(--muted); font-size:14px;}
+
+/* ---------- Categories ---------- */
+.section-title{font-family:var(--font-display); font-weight:700; font-size:16px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;}
+.section-title .see-all{font-family:var(--font-body); font-weight:600; font-size:12px; color:var(--amber-dark); cursor:pointer;}
+.cat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px;}
+.cat-card{
+  background:var(--card); border-radius:var(--radius-sm); padding:14px 6px; text-align:center;
+  border:1px solid var(--line); cursor:pointer; transition:border-color .15s;
+}
+.cat-card:active{border-color:var(--amber);}
+.cat-card .ic{font-size:22px; display:block; margin-bottom:6px;}
+.cat-card .lbl{font-size:10.5px; font-weight:600; color:var(--ink-soft); line-height:1.2;}
+
+/* ---------- Urgency button ---------- */
+.urgency-fab{
+  position:absolute; right:18px; bottom:92px; z-index:9;
+  background:var(--danger); color:#fff; border:none; border-radius:999px;
+  padding:13px 18px; font-weight:700; font-size:13px; box-shadow:0 10px 22px rgba(196,87,59,0.4);
+  display:flex; align-items:center; gap:8px; cursor:pointer;
+}
+.urgency-fab .dot{width:8px; height:8px; border-radius:50%; background:#fff; animation:pulse 1.4s infinite;}
+@keyframes pulse{0%,100%{opacity:1;} 50%{opacity:0.3;}}
+
+/* ---------- Pro card ---------- */
+.pro-card{
+  background:var(--card); border-radius:var(--radius); border:1px solid var(--line); padding:14px;
+  display:flex; gap:12px; margin-bottom:12px; cursor:pointer; box-shadow:var(--shadow);
+}
+.avatar-ring{position:relative; width:58px; height:58px; flex-shrink:0;}
+.avatar-ring svg{position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg);}
+.avatar-ring .av{
+  position:absolute; inset:5px; border-radius:50%; background:var(--navy); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:16px;
+}
+.pro-info{flex:1; min-width:0;}
+.pro-info .row1{display:flex; justify-content:space-between; align-items:flex-start; gap:6px;}
+.pro-name{font-weight:700; font-size:14.5px; color:var(--ink);}
+.pro-job{font-size:12px; color:var(--muted); margin-top:1px;}
+.badge{
+  font-family:var(--font-mono); font-size:9px; font-weight:600; background:#EAF4EE; color:var(--success);
+  padding:2px 7px; border-radius:6px; white-space:nowrap;
+}
+.pro-meta{display:flex; align-items:center; gap:10px; margin-top:8px; font-size:11.5px; color:var(--muted);}
+.pro-meta .stars{color:var(--amber-dark); font-weight:700;}
+.avail-tag{font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px;}
+.avail-now{background:#EAF4EE; color:var(--success);}
+.avail-today{background:#FCF0DC; color:var(--amber-dark);}
+.avail-sched{background:#EDEEF3; color:var(--muted);}
+
+/* ---------- Filters ---------- */
+.filter-row{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px;}
+.chip{
+  flex-shrink:0; padding:9px 16px; border-radius:999px; border:1.5px solid var(--line); background:var(--card);
+  font-size:12.5px; font-weight:600; color:var(--ink-soft); cursor:pointer; white-space:nowrap;
+}
+.chip.active{background:var(--navy); border-color:var(--navy); color:#fff;}
+
+/* ---------- Profile detail ---------- */
+.profile-hero{text-align:center; padding:12px 0 20px;}
+.profile-hero .avatar-lg{
+  width:96px; height:96px; border-radius:50%; background:var(--navy); color:#fff; margin:0 auto 14px;
+  display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:32px; font-weight:700;
+  border:4px solid var(--amber);
+}
+.profile-hero h2{font-family:var(--font-display); font-size:21px; font-weight:700;}
+.profile-hero .job{color:var(--muted); font-size:13.5px; margin-top:2px;}
+.stat-strip{display:flex; justify-content:space-around; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px 8px; margin:16px 0;}
+.stat-strip .stat{text-align:center;}
+.stat-strip .num{font-family:var(--font-mono); font-weight:600; font-size:16px; color:var(--navy);}
+.stat-strip .lbl{font-size:10px; color:var(--muted); margin-top:2px;}
+.info-card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px; margin-bottom:14px;}
+.info-card h3{font-size:13px; font-weight:700; margin-bottom:8px;}
+.info-card p{font-size:13px; color:var(--ink-soft); line-height:1.5;}
+.review{padding:10px 0; border-bottom:1px solid var(--line); font-size:12.5px;}
+.review:last-child{border-bottom:none;}
+.review .rname{font-weight:700; margin-bottom:2px;}
+.review .rstars{color:var(--amber-dark); font-size:11px;}
+.action-bar{display:flex; gap:10px; margin-top:6px;}
+.action-bar .btn{flex:1;}
+
+/* ---------- Forms ---------- */
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:12.5px; font-weight:700; color:var(--ink-soft); margin-bottom:7px;}
+.field input, .field select, .field textarea{
+  width:100%; border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:13px 14px;
+  font-family:var(--font-body); font-size:14px; background:var(--card); color:var(--ink);
+}
+.field textarea{resize:vertical; min-height:90px;}
+.field input:focus, .field select:focus, .field textarea:focus{outline:none; border-color:var(--navy);}
+
+/* ---------- Tracking / status ring stepper ---------- */
+.status-wrap{display:flex; flex-direction:column; align-items:center; padding:20px 0 8px;}
+.status-ring{width:150px; height:150px; position:relative; margin-bottom:16px;}
+.status-ring svg{width:100%; height:100%; transform:rotate(-90deg);}
+.status-ring .center{
+  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
+.status-ring .center .ic{font-size:30px;}
+.status-ring .center .lbl{font-family:var(--font-display); font-weight:700; font-size:13.5px; margin-top:4px; text-align:center; padding:0 10px;}
+.steps{width:100%; margin-top:8px;}
+.step{display:flex; gap:12px; padding:10px 0;}
+.step .bullet{width:22px; height:22px; border-radius:50%; border:2px solid var(--line); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; margin-top:1px;}
+.step.done .bullet{background:var(--success); border-color:var(--success); color:#fff;}
+.step.current .bullet{background:var(--amber); border-color:var(--amber); color:var(--ink);}
+.step .txt .t1{font-weight:700; font-size:13px;}
+.step .txt .t2{font-size:11.5px; color:var(--muted);}
+
+/* ---------- Client profile ---------- */
+.list-row{display:flex; align-items:center; justify-content:space-between; padding:15px 4px; border-bottom:1px solid var(--line); font-size:14px; font-weight:600; cursor:pointer;}
+.list-row:last-child{border-bottom:none;}
+.list-row .arrow{color:var(--muted);}
+
+.empty{text-align:center; padding:40px 10px; color:var(--muted); font-size:13px;}
+
+::-webkit-scrollbar{display:none;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===================== SPLASH ===================== -->
+  <div class="screen active" id="screen-splash">
+    <div style="width:100%; display:flex; justify-content:flex-end;">
+      <span style="font-family:var(--font-mono); font-size:11px; color:rgba(255,255,255,0.5);">Conakry, Guinée</span>
+    </div>
+    <div class="splash-mark">
+      <div class="ring-logo" style="width:120px;height:120px;">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="44" fill="none" stroke="#F2A33C" stroke-width="6" stroke-linecap="round"
+            stroke-dasharray="108 268" stroke-dashoffset="-14" transform="rotate(-90 50 50)"/>
+          <circle cx="50" cy="50" r="44" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round"
+            stroke-dasharray="108 268" stroke-dashoffset="-136" transform="rotate(-90 50 50)"/>
+          <path d="M 33 30 L 50 15 L 67 30" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="40" cy="42" r="7" fill="#ffffff"/>
+          <rect x="34.5" y="35" width="11" height="4" rx="1.5" fill="#ffffff"/>
+          <path d="M 40 49 C 32 51, 28 58, 30 68 L 38 82 L 46 68 C 47 62, 46 54, 52 50 L 46 46 C 43 47, 41 48, 40 49 Z" fill="#ffffff"/>
+          <circle cx="60" cy="42" r="7" fill="#F2A33C"/>
+          <path d="M 60 49 C 68 51, 72 58, 70 68 L 62 82 L 54 68 C 53 62, 54 54, 48 50 L 54 46 C 57 47, 59 48, 60 49 Z" fill="#F2A33C"/>
+          <circle cx="50" cy="52" r="3.2" fill="#ffffff"/>
+          <circle cx="50" cy="52" r="1.4" fill="#F2A33C"/>
+        </svg>
+      </div>
+      <div class="brand-name">walikh<span style="color:var(--amber)">é</span></div>
+      <div class="brand-tagline">LE BON OUVRIER, AU BON MOMENT.</div>
+    </div>
+    <div class="splash-actions">
+      <button class="btn btn-primary btn-block" onclick="go('home')">Se connecter</button>
+      <button class="btn btn-outline btn-block" onclick="go('home')">Créer un compte</button>
+    </div>
+  </div>
+
+  <!-- ===================== ACCUEIL ===================== -->
+  <div class="screen" id="screen-home">
+    <div class="topbar"><h1>Bonjour 👋</h1><div class="back-btn" onclick="go('client-profile')">👤</div></div>
+    <div class="content">
+      <div class="search-bar" onclick="go('search')"><span class="ic">🔍</span><span class="txt">Rechercher un électricien, plombier…</span></div>
+
+      <div class="section-title">Catégories populaires</div>
+      <div class="cat-grid" id="cat-grid"></div>
+
+      <div class="section-title">Professionnels recommandés <span class="see-all" onclick="go('search')">Tout voir</span></div>
+      <div id="reco-list"></div>
+    </div>
+    <button class="urgency-fab" onclick="alert('Recherche du professionnel disponible le plus proche…')"><span class="dot"></span> Urgence</button>
+    <div class="bottom-nav" id="nav-home"></div>
+  </div>
+
+  <!-- ===================== RECHERCHE ===================== -->
+  <div class="screen" id="screen-search">
+    <div class="topbar"><div class="back-btn" onclick="go('home')">←</div><h1>Rechercher</h1><div style="width:36px;"></div></div>
+    <div class="content">
+      <div class="search-bar"><span class="ic">🔍</span><span class="txt" id="search-summary">Tous les métiers</span></div>
+      <div class="filter-row" id="filter-cat"></div>
+      <div class="filter-row" id="filter-avail"></div>
+      <div id="search-results"></div>
+    </div>
+    <div class="bottom-nav" id="nav-search"></div>
+  </div>
+
+  <!-- ===================== PROFIL PRO ===================== -->
+  <div class="screen" id="screen-pro">
+    <div class="topbar"><div class="back-btn" onclick="goBack()">←</div><h1>Profil</h1><div style="width:36px;"></div></div>
+    <div class="content" id="pro-detail"></div>
+  </div>
+
+  <!-- ===================== RÉSERVATION ===================== -->
+  <div class="screen" id="screen-booking">
+    <div class="topbar"><div class="back-btn" onclick="goBack()">←</div><h1>Réserver</h1><div style="width:36px;"></div></div>
+    <div class="content">
+      <div class="field"><label>Votre nom</label>
+        <input type="text" id="bk-name" placeholder="Nom complet"></div>
+      <div class="field"><label>Votre téléphone</label>
+        <input type="tel" id="bk-phone" placeholder="+224 6XX XX XX XX"></div>
+      <div class="field"><label>Service demandé</label>
+        <select id="bk-service"></select>
+      </div>
+      <div class="field"><label>Description du problème</label>
+        <textarea id="bk-desc" placeholder="Décrivez brièvement le besoin…"></textarea>
+      </div>
+      <div class="field"><label>Adresse</label>
+        <input type="text" id="bk-address" placeholder="Ex : Madina, Conakry"></div>
+      <div class="field"><label>Date souhaitée</label>
+        <input type="datetime-local" id="bk-date"></div>
+      <button class="btn btn-primary btn-block" onclick="submitBooking()">Envoyer la demande</button>
+    </div>
+  </div>
+
+  <!-- ===================== SUIVI DE DEMANDE ===================== -->
+  <div class="screen" id="screen-tracking">
+    <div class="topbar"><div class="back-btn" onclick="go('requests')">←</div><h1>Suivi</h1><div style="width:36px;"></div></div>
+    <div class="content" id="tracking-detail"></div>
+  </div>
+
+  <!-- ===================== MES DEMANDES ===================== -->
+  <div class="screen" id="screen-requests">
+    <div class="topbar"><h1>Mes demandes</h1></div>
+    <div class="content" id="requests-list"></div>
+    <div class="bottom-nav" id="nav-requests"></div>
+  </div>
+
+  <!-- ===================== MESSAGES ===================== -->
+  <div class="screen" id="screen-messages">
+    <div class="topbar"><h1>Messages</h1></div>
+    <div class="content"><div class="empty">💬<br><br>Vos conversations avec les professionnels<br>apparaîtront ici.</div></div>
+    <div class="bottom-nav" id="nav-messages"></div>
+  </div>
+
+  <!-- ===================== PROFIL CLIENT ===================== -->
+  <div class="screen" id="screen-client-profile">
+    <div class="topbar"><h1>Mon profil</h1></div>
+    <div class="content">
+      <div class="profile-hero">
+        <div class="avatar-lg">MB</div>
+        <h2>Mamadou Bah</h2>
+        <div class="job">+224 6XX XX XX XX</div>
+      </div>
+      <div class="info-card">
+        <div class="list-row"><span>📍 Adresse</span><span class="arrow">Madina, Conakry</span></div>
+        <div class="list-row"><span>📜 Historique des services</span><span class="arrow">›</span></div>
+        <div class="list-row"><span>⭐ Favoris</span><span class="arrow">›</span></div>
+        <div class="list-row"><span>⚙️ Paramètres</span><span class="arrow">›</span></div>
+      </div>
+    </div>
+    <div class="bottom-nav" id="nav-client-profile"></div>
+  </div>
+
+</div>
+
+<script>
+/* ============ FIREBASE (Walikhé) ============ */
+var WK_FB_KEY = 'AIzaSyAfHunjUEhNghi-t5rjXNuKyN9YuO2wqEk';
+var WK_FB_PID = 'walikhe-ccf06';
+var WK_FB_BASE = 'https://firestore.googleapis.com/v1/projects/' + WK_FB_PID + '/databases/(default)/documents/';
+
+function wkFetchTimeout(url, opts, ms) {
+  ms = ms || 8000;
+  var ctrl = new AbortController();
+  var timer = setTimeout(function(){ ctrl.abort(); }, ms);
+  return fetch(url, Object.assign({signal: ctrl.signal}, opts || {}))
+    .then(function(r){ clearTimeout(timer); return r; })
+    .catch(function(e){ clearTimeout(timer); throw e; });
+}
+function wkParse(fields) {
+  var o = {};
+  if (!fields) return o;
+  Object.keys(fields).forEach(function(k) {
+    var v = fields[k];
+    var val = v.stringValue !== undefined ? v.stringValue
+      : v.doubleValue !== undefined ? v.doubleValue
+      : v.integerValue !== undefined ? Number(v.integerValue)
+      : v.booleanValue !== undefined ? v.booleanValue : null;
+    if (typeof val === 'string' && val.length > 1 && (val[0]==='['||val[0]==='{')) {
+      try { val = JSON.parse(val); } catch(e) {}
+    }
+    o[k] = val;
+  });
+  return o;
+}
+function wkSerial(data) {
+  var f = {};
+  Object.keys(data).forEach(function(k) {
+    if (k==='_id') return;
+    var v = data[k];
+    if (v===null||v===undefined) f[k]={nullValue:null};
+    else if (typeof v==='number') f[k]={doubleValue:v};
+    else if (typeof v==='boolean') f[k]={booleanValue:v};
+    else if (Array.isArray(v)||(typeof v==='object')) f[k]={stringValue:JSON.stringify(v)};
+    else f[k]={stringValue:String(v)};
+  });
+  return f;
+}
+async function wkGetAll(col) {
+  var allDocs = [];
+  var pageToken = null;
+  do {
+    var url = WK_FB_BASE + col + '?key=' + WK_FB_KEY + '&pageSize=300';
+    if (pageToken) url += '&pageToken=' + pageToken;
+    var r = await wkFetchTimeout(url, {}, 15000);
+    if (!r.ok) throw new Error(col + ' error ' + r.status);
+    var j = await r.json();
+    pageToken = j.nextPageToken || null;
+    if (j.documents) {
+      var docs = j.documents.map(function(d) {
+        var o = wkParse(d.fields);
+        o._id = d.name.split('/').pop();
+        return o;
+      });
+      allDocs = allDocs.concat(docs);
+    }
+  } while (pageToken);
+  return allDocs;
+}
+async function wkPut(col, id, data) {
+  var url = WK_FB_BASE + col + '/' + id + '?key=' + WK_FB_KEY;
+  var r = await wkFetchTimeout(url, {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({fields: wkSerial(data)})
+  }, 8000);
+  if (!r.ok) throw new Error('put error ' + r.status);
+}
+async function wkDel(col, id) {
+  var url = WK_FB_BASE + col + '/' + id + '?key=' + WK_FB_KEY;
+  await wkFetchTimeout(url, {method:'DELETE'}, 8000);
+}
+
+/* ============ DONNÉES ============ */
+const categories = [
+  {id:'elec', ic:'⚡', lbl:'Électricité'},
+  {id:'plomb', ic:'🔧', lbl:'Plomberie'},
+  {id:'meca', ic:'🚗', lbl:'Mécanique'},
+  {id:'bat', ic:'🧱', lbl:'Bâtiment'},
+  {id:'info', ic:'💻', lbl:'Informatique'},
+  {id:'net', ic:'🧹', lbl:'Nettoyage'},
+  {id:'autre', ic:'🛠', lbl:'Autres'},
+];
+
+// Profils de démonstration : utilisés pour amorcer Firebase la toute première fois,
+// et comme repli si la connexion Internet/Firebase est indisponible.
+const DEMO_PROS = [
+  {id:1, nom:'Ibrahima Sow', metier:'Électricien', categorie:'elec', note:4.8, certifie:true, experience:'6 ans', tarif:'150 000 – 300 000 GNF', zone:'Madina, Matam', disponibilite:'now', statut:'actif', missions:47, telephone:'+224 622 00 00 01'},
+  {id:2, nom:'Ousmane Diallo', metier:'Plombier', categorie:'plomb', note:4.6, certifie:true, experience:'9 ans', tarif:'100 000 – 250 000 GNF', zone:'Sonfonia, Ratoma', disponibilite:'today', statut:'actif', missions:63, telephone:'+224 622 00 00 02'},
+  {id:3, nom:'Mohamed Camara', metier:'Mécanicien auto', categorie:'meca', note:4.9, certifie:true, experience:'12 ans', tarif:'Devis sur place', zone:'Kaloum', disponibilite:'now', statut:'actif', missions:81, telephone:'+224 622 00 00 03'},
+  {id:4, nom:'Aïssatou Barry', metier:'Technicienne informatique', categorie:'info', note:4.7, certifie:false, experience:'4 ans', tarif:'80 000 – 200 000 GNF', zone:'Dixinn', disponibilite:'sched', statut:'actif', missions:22, telephone:'+224 622 00 00 04'},
+  {id:5, nom:'Fodé Keita', metier:'Maçon', categorie:'bat', note:4.5, certifie:true, experience:'15 ans', tarif:'Devis sur place', zone:'Matoto', disponibilite:'today', statut:'actif', missions:39, telephone:'+224 622 00 00 05'},
+];
+const DEMO_AVIS = [
+  {id:1, proId:1, proNom:'Ibrahima Sow', clientNom:'Fatoumata D.', note:5, texte:'Rapide et très professionnel.', statut:'publie'},
+  {id:2, proId:1, proNom:'Ibrahima Sow', clientNom:'Alpha C.', note:4, texte:'Bon travail, ponctuel.', statut:'publie'},
+  {id:3, proId:2, proNom:'Ousmane Diallo', clientNom:'Mariam S.', note:5, texte:'Fuite réparée en 30 minutes.', statut:'publie'},
+  {id:4, proId:3, proNom:'Mohamed Camara', clientNom:'Sekou K.', note:5, texte:'Le meilleur de la zone.', statut:'publie'},
+  {id:5, proId:4, proNom:'Aïssatou Barry', clientNom:'Boubacar D.', note:4, texte:'A réglé mon problème réseau.', statut:'publie'},
+  {id:6, proId:5, proNom:'Fodé Keita', clientNom:'Aminata B.', note:5, texte:'Travail soigné.', statut:'publie'},
+];
+
+let pros = [];
+let avisList = [];
+let bookings = []; // demandes du client courant
+let currentProId = null;
+let currentBookingId = null;
+let screenHistory = [];
+let activeCat = 'all';
+let activeAvail = 'all';
+let wkOnline = false;
+let _wkPollTimer = null;
+
+const navItems = [
+  {id:'home', ic:'🏠', lbl:'Accueil'},
+  {id:'search', ic:'🔍', lbl:'Rechercher'},
+  {id:'requests', ic:'📅', lbl:'Mes demandes'},
+  {id:'messages', ic:'💬', lbl:'Messages'},
+  {id:'client-profile', ic:'👤', lbl:'Profil'},
+];
+
+/* ============ CHARGEMENT INITIAL ============ */
+async function wkInit(){
+  try {
+    let list = await wkGetAll('professionnels');
+    if (list.length === 0) {
+      for (const p of DEMO_PROS) { await wkPut('professionnels', 'pro-' + p.id, p); }
+      list = DEMO_PROS.slice();
+    }
+    pros = list;
+    wkOnline = true;
+  } catch(e) {
+    console.log('Walikhé : connexion Firebase indisponible, mode démonstration local.', e);
+    pros = DEMO_PROS.slice();
+    wkOnline = false;
+  }
+  try {
+    if (wkOnline) {
+      let al = await wkGetAll('avis');
+      if (al.length === 0) {
+        for (const a of DEMO_AVIS) { await wkPut('avis', 'avis-' + a.id, a); }
+        al = DEMO_AVIS.slice();
+      }
+      avisList = al;
+    } else {
+      avisList = DEMO_AVIS.slice();
+    }
+  } catch(e) { avisList = DEMO_AVIS.slice(); }
+
+  if (localStorage.getItem('wk_client_phone')) { await loadMyBookings(); }
+  const active = document.querySelector('.screen.active');
+  if (active && active.id === 'screen-home') renderHome();
+  if (active && active.id === 'screen-requests') renderRequestsList();
+}
+
+/* ============ NAVIGATION ============ */
+function go(screen, push=true){
+  const current = document.querySelector('.screen.active');
+  if(push && current) screenHistory.push(current.id.replace('screen-',''));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+screen).classList.add('active');
+  renderNav(screen);
+  if(screen==='home') renderHome();
+  if(screen==='search') renderSearch();
+  if(screen==='requests') renderRequests();
+  if(screen!=='tracking' && _wkPollTimer) { clearInterval(_wkPollTimer); _wkPollTimer=null; }
+  window.scrollTo(0,0);
+}
+function goBack(){
+  const prev = screenHistory.pop() || 'home';
+  go(prev, false);
+}
+
+function renderNav(active){
+  ['home','search','requests','messages','client-profile'].forEach(id=>{
+    const el = document.getElementById('nav-'+id);
+    if(!el) return;
+    el.innerHTML = navItems.map(n=>`
+      <div class="nav-item ${n.id===active?'active':''}" onclick="go('${n.id}')">
+        <span class="ic">${n.ic}</span><span>${n.lbl}</span>
+      </div>`).join('');
+  });
+}
+
+/* ============ RENDU ACCUEIL ============ */
+function renderHome(){
+  document.getElementById('cat-grid').innerHTML = categories.slice(0,8).map(c=>`
+    <div class="cat-card" onclick="openCategory('${c.id}')">
+      <span class="ic">${c.ic}</span><span class="lbl">${c.lbl}</span>
+    </div>`).join('');
+  const activePros = pros.filter(p=>p.statut!=='refuse');
+  const reco = activePros.slice(0,3);
+  document.getElementById('reco-list').innerHTML = reco.length ? reco.map(p=>proCardHTML(p)).join('') : '<div class="empty">Chargement des professionnels…</div>';
+}
+function openCategory(catId){
+  activeCat = catId;
+  go('search');
+}
+function proCardHTML(p){
+  const initials = (p.nom||'').split(' ').map(w=>w[0]).join('').slice(0,2);
+  const availLabel = p.disponibilite==='now' ? 'Disponible maintenant' : p.disponibilite==='today' ? 'Disponible aujourd’hui' : 'Sur rendez-vous';
+  const availClass = p.disponibilite==='now' ? 'avail-now' : p.disponibilite==='today' ? 'avail-today' : 'avail-sched';
+  const dash = p.disponibilite==='now' ? 0 : p.disponibilite==='today' ? 90 : 180;
+  return `
+  <div class="pro-card" onclick="openPro(${p.id})">
+    <div class="avatar-ring">
+      <svg viewBox="0 0 60 60">
+        <circle cx="30" cy="30" r="27" fill="none" stroke="#E7E3D8" stroke-width="4"/>
+        <circle cx="30" cy="30" r="27" fill="none" stroke="${p.disponibilite==='now'?'#2E8B63':'#F2A33C'}" stroke-width="4" stroke-linecap="round"
+          stroke-dasharray="170" stroke-dashoffset="${dash}"/>
+      </svg>
+      <div class="av">${initials}</div>
+    </div>
+    <div class="pro-info">
+      <div class="row1">
+        <div><div class="pro-name">${p.nom}</div><div class="pro-job">${p.metier}</div></div>
+        ${p.certifie?'<span class="badge">🏅 Walikhé Certifié</span>':''}
+      </div>
+      <div class="pro-meta">
+        <span class="stars">★ ${p.note}</span>
+        <span>${p.zone}</span>
+      </div>
+      <div style="margin-top:8px;"><span class="avail-tag ${availClass}">${availLabel}</span></div>
+    </div>
+  </div>`;
+}
+
+/* ============ RECHERCHE ============ */
+function renderSearch(){
+  document.getElementById('filter-cat').innerHTML = ['all',...categories.map(c=>c.id)].map(id=>{
+    const lbl = id==='all' ? 'Toutes catégories' : categories.find(c=>c.id===id).lbl;
+    return `<div class="chip ${activeCat===id?'active':''}" onclick="setCat('${id}')">${lbl}</div>`;
+  }).join('');
+  document.getElementById('filter-avail').innerHTML = [
+    {id:'all', lbl:'Toute disponibilité'},{id:'now', lbl:'🟢 Maintenant'},{id:'today', lbl:'🟠 Aujourd’hui'},{id:'sched', lbl:'📅 Programmation'}
+  ].map(a=>`<div class="chip ${activeAvail===a.id?'active':''}" onclick="setAvail('${a.id}')">${a.lbl}</div>`).join('');
+
+  let results = pros.filter(p => p.statut!=='refuse' && (activeCat==='all'||p.categorie===activeCat) && (activeAvail==='all'||p.disponibilite===activeAvail));
+  document.getElementById('search-summary').textContent = results.length + ' professionnel' + (results.length>1?'s':'') + ' trouvé' + (results.length>1?'s':'');
+  document.getElementById('search-results').innerHTML = results.length ? results.map(p=>proCardHTML(p)).join('') : '<div class="empty">Aucun professionnel ne correspond à ces critères.<br>Essayez d’élargir votre recherche.</div>';
+}
+function setCat(id){ activeCat = id; renderSearch(); }
+function setAvail(id){ activeAvail = id; renderSearch(); }
+
+/* ============ PROFIL PRO ============ */
+function openPro(id){
+  currentProId = id;
+  const p = pros.find(x=>x.id===id);
+  const initials = (p.nom||'').split(' ').map(w=>w[0]).join('').slice(0,2);
+  const proAvis = avisList.filter(a=>a.proId===p.id && a.statut!=='signale' && a.statut!=='masque');
+  document.getElementById('pro-detail').innerHTML = `
+    <div class="profile-hero">
+      <div class="avatar-lg">${initials}</div>
+      <h2>${p.nom}</h2>
+      <div class="job">${p.metier} ${p.certifie?'· 🏅 Walikhé Certifié':''}</div>
+    </div>
+    <div class="stat-strip">
+      <div class="stat"><div class="num">★ ${p.note}</div><div class="lbl">Note</div></div>
+      <div class="stat"><div class="num">${p.experience}</div><div class="lbl">Expérience</div></div>
+      <div class="stat"><div class="num">${proAvis.length}</div><div class="lbl">Avis</div></div>
+    </div>
+    <div class="info-card">
+      <h3>📍 Zone d'intervention</h3><p>${p.zone}</p>
+    </div>
+    <div class="info-card">
+      <h3>💰 Tarif estimatif</h3><p>${p.tarif}</p>
+    </div>
+    <div class="info-card">
+      <h3>📝 Avis clients</h3>
+      ${proAvis.length ? proAvis.map(r=>`<div class="review"><div class="rname">${r.clientNom}</div><div class="rstars">${'★'.repeat(r.note)}${'☆'.repeat(5-r.note)}</div><div>${r.texte}</div></div>`).join('') : '<p style="color:var(--muted);font-size:12.5px;">Pas encore d’avis.</p>'}
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-ghost" onclick="alert('Appel vers ${p.nom}…')">📞 Appeler</button>
+      <button class="btn btn-ghost" onclick="go('messages')">💬 Message</button>
+      <button class="btn btn-primary" onclick="openBooking()">Réserver</button>
+    </div>
+  `;
+  go('pro');
+}
+
+/* ============ RÉSERVATION ============ */
+function openBooking(){
+  const p = pros.find(x=>x.id===currentProId);
+  document.getElementById('bk-service').innerHTML = `<option>${p.metier}</option>` + categories.filter(c=>c.id!==p.categorie).map(c=>`<option>${c.lbl}</option>`).join('');
+  document.getElementById('bk-name').value = localStorage.getItem('wk_client_name') || '';
+  document.getElementById('bk-phone').value = localStorage.getItem('wk_client_phone') || '';
+  document.getElementById('bk-desc').value='';
+  document.getElementById('bk-address').value='';
+  document.getElementById('bk-date').value='';
+  go('booking');
+}
+async function submitBooking(){
+  const name = document.getElementById('bk-name').value.trim();
+  const phone = document.getElementById('bk-phone').value.trim();
+  const desc = document.getElementById('bk-desc').value.trim();
+  const addr = document.getElementById('bk-address').value.trim();
+  const date = document.getElementById('bk-date').value;
+  if(!name || !phone){ alert('Merci de renseigner votre nom et votre téléphone.'); return; }
+  if(!addr){ alert('Merci de renseigner une adresse.'); return; }
+  const p = pros.find(x=>x.id===currentProId);
+
+  localStorage.setItem('wk_client_name', name);
+  localStorage.setItem('wk_client_phone', phone);
+
+  const booking = {
+    id: Date.now(),
+    proId: p.id,
+    proNom: p.nom,
+    clientNom: name,
+    clientTelephone: phone,
+    service: document.getElementById('bk-service').value,
+    description: desc,
+    adresse: addr,
+    date,
+    statut: 0, // 0 attente, 1 accepté, 2 en cours, 3 terminé
+    createdAt: new Date().toISOString()
+  };
+  bookings.unshift(booking);
+  currentBookingId = booking.id;
+  screenHistory = ['requests'];
+
+  if (wkOnline) {
+    try { await wkPut('demandes', 'dem-' + booking.id, booking); }
+    catch(e) { console.log('Erreur envoi demande:', e); }
+    try {
+      const uid = phone.replace(/[^0-9+]/g, '');
+      const existing = await wkGetAll('utilisateurs').catch(()=>[]);
+      const already = existing.find(u => u._id === uid);
+      if (!already) {
+        await wkPut('utilisateurs', uid, {telephone: phone, nom: name, ville: addr, statut: 'actif', createdAt: new Date().toISOString()});
+      }
+    } catch(e) { console.log('Erreur enregistrement utilisateur:', e); }
+  }
+
+  openTracking(booking.id);
+}
+
+/* ============ MES DEMANDES ============ */
+async function loadMyBookings(){
+  const phone = localStorage.getItem('wk_client_phone');
+  if (!phone || !wkOnline) return;
+  try {
+    const all = await wkGetAll('demandes');
+    bookings = all.filter(d => d.clientTelephone === phone).sort((a,b)=> (b.id||0)-(a.id||0));
+  } catch(e) { console.log('Erreur chargement de vos demandes:', e); }
+}
+async function renderRequests(){
+  const phone = localStorage.getItem('wk_client_phone');
+  if (!phone) {
+    document.getElementById('requests-list').innerHTML = `
+      <div class="empty">
+        📋<br><br>
+        Entrez votre numéro pour retrouver vos demandes.<br><br>
+        <input type="tel" id="my-phone-input" placeholder="+224 6XX XX XX XX" style="width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;margin-bottom:10px;text-align:center;font-family:inherit;font-size:14px;">
+        <button class="btn btn-primary" onclick="setMyPhone()">Valider</button>
+      </div>`;
+    return;
+  }
+  document.getElementById('requests-list').innerHTML = '<div class="empty">Chargement…</div>';
+  await loadMyBookings();
+  renderRequestsList();
+}
+function renderRequestsList(){
+  document.getElementById('requests-list').innerHTML = bookings.length ? bookings.map(b=>`
+    <div class="pro-card" onclick="openTracking(${b.id})">
+      <div class="avatar-ring"><div class="av" style="position:static; width:58px; height:58px;">${(b.proNom||'').split(' ').map(w=>w[0]).join('').slice(0,2)}</div></div>
+      <div class="pro-info">
+        <div class="pro-name">${b.proNom}</div>
+        <div class="pro-job">${b.service}</div>
+        <div style="margin-top:8px;"><span class="avail-tag ${statusTagClass(b.statut)}">${statusLabel(b.statut)}</span></div>
+      </div>
+    </div>`).join('') : '<div class="empty">📋<br><br>Vous n’avez pas encore de demande.<br>Recherchez un professionnel pour commencer.</div>';
+}
+function setMyPhone(){
+  const v = document.getElementById('my-phone-input').value.trim();
+  if(!v){ return; }
+  localStorage.setItem('wk_client_phone', v);
+  renderRequests();
+}
+function statusLabel(s){ return ['🟡 En attente','🔵 Accepté','🟠 En cours','🟢 Terminé','⛔ Refusé'][s] || '🟡 En attente'; }
+function statusTagClass(s){ return ['avail-sched','avail-today','avail-today','avail-now','avail-sched'][s] || 'avail-sched'; }
+
+/* ============ SUIVI ============ */
+function openTracking(id){
+  currentBookingId = id;
+  renderTracking();
+  go('tracking');
+  if (_wkPollTimer) clearInterval(_wkPollTimer);
+  _wkPollTimer = setInterval(async ()=>{
+    const scr = document.getElementById('screen-tracking');
+    if (!scr || !scr.classList.contains('active') || !wkOnline) { clearInterval(_wkPollTimer); _wkPollTimer=null; return; }
+    try {
+      const d = await wkGetAll('demandes');
+      const updated = d.find(x=>x.id===currentBookingId);
+      if (updated) {
+        const idx = bookings.findIndex(b=>b.id===currentBookingId);
+        if (idx>-1) bookings[idx]=updated; else bookings.unshift(updated);
+        renderTracking();
+      }
+    } catch(e){}
+  }, 15000);
+}
+function renderTracking(){
+  const b = bookings.find(x=>x.id===currentBookingId);
+  if (!b) { document.getElementById('tracking-detail').innerHTML = '<div class="empty">Demande introuvable.</div>'; return; }
+  const steps = [
+    {t:'Demande envoyée', d:'Votre demande a été transmise à ' + b.proNom},
+    {t:'Professionnel accepté', d:'La demande a été acceptée'},
+    {t:'Intervention en cours', d:'Le professionnel est sur place'},
+    {t:'Service terminé', d:'Merci de confirmer et d’évaluer'},
+  ];
+  const icons = ['⏳','🔵','🛠','✅','⛔'];
+  const pct = [10,45,80,100,100][b.statut] || 10;
+  if (b.statut === 4) {
+    document.getElementById('tracking-detail').innerHTML = `
+      <div class="status-wrap">
+        <div class="status-ring">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="44" fill="none" stroke="#E7E3D8" stroke-width="8"/>
+            <circle cx="50" cy="50" r="44" fill="none" stroke="#C4573B" stroke-width="8" stroke-linecap="round" stroke-dasharray="276" stroke-dashoffset="0"/>
+          </svg>
+          <div class="center"><span class="ic">⛔</span><span class="lbl">Refusée</span></div>
+        </div>
+        <div style="font-weight:700; font-size:15px;">${b.proNom}</div>
+        <div style="color:var(--muted); font-size:12.5px;">${b.service} · ${b.adresse}</div>
+      </div>
+      <div class="info-card" style="margin-top:16px;"><p>Ce professionnel n’a pas pu accepter votre demande. Vous pouvez en choisir un autre pour le même besoin.</p></div>
+      <div class="action-bar" style="margin-top:12px;">
+        <button class="btn btn-ghost" onclick="cancelBooking(${b.id})">Retirer de mes demandes</button>
+        <button class="btn btn-primary" onclick="go('search')">Chercher un autre pro</button>
+      </div>
+    `;
+    return;
+  }
+  document.getElementById('tracking-detail').innerHTML = `
+    <div class="status-wrap">
+      <div class="status-ring">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="44" fill="none" stroke="#E7E3D8" stroke-width="8"/>
+          <circle cx="50" cy="50" r="44" fill="none" stroke="${b.statut===3?'#2E8B63':'#F2A33C'}" stroke-width="8" stroke-linecap="round"
+            stroke-dasharray="276" stroke-dashoffset="${276 - (276*pct/100)}"/>
+        </svg>
+        <div class="center"><span class="ic">${icons[b.statut]||icons[0]}</span><span class="lbl">${statusLabel(b.statut).replace(/^[^ ]+ /,'')}</span></div>
+      </div>
+      <div style="font-weight:700; font-size:15px;">${b.proNom}</div>
+      <div style="color:var(--muted); font-size:12.5px;">${b.service} · ${b.adresse}</div>
+    </div>
+    <div class="steps">
+      ${steps.map((s,i)=>`
+        <div class="step ${i<b.statut?'done':i===b.statut?'current':''}">
+          <div class="bullet">${i<b.statut?'✓':i+1}</div>
+          <div class="txt"><div class="t1">${s.t}</div><div class="t2">${s.d}</div></div>
+        </div>`).join('')}
+    </div>
+    <div class="action-bar" style="margin-top:12px;">
+      <button class="btn btn-ghost" onclick="go('messages')">Contacter</button>
+      ${b.statut<3 ? `<button class="btn btn-ghost" onclick="cancelBooking(${b.id})">Annuler</button>` : `<button class="btn btn-primary" onclick="alert('Merci pour votre évaluation !')">Évaluer</button>`}
+    </div>
+  `;
+}
+async function cancelBooking(id){
+  bookings = bookings.filter(b=>b.id!==id);
+  if (wkOnline) { try { await wkDel('demandes', 'dem-'+id); } catch(e){} }
+  if (_wkPollTimer) { clearInterval(_wkPollTimer); _wkPollTimer=null; }
+  go('requests');
+}
+
+/* ============ INIT ============ */
+renderNav('home');
+wkInit();
+</script>
+</body>
+</html>
