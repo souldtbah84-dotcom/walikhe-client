@@ -275,6 +275,12 @@ body{font-family:var(--font-body); background:var(--ink); color:var(--ink); disp
 <div id="finish-modal" style="display:none; position:fixed; left:50%; bottom:0; transform:translateX(-50%); width:100%; max-width:480px; max-height:88vh; overflow-y:auto; background:var(--card); border-radius:20px 20px 0 0; z-index:301; padding:22px 20px calc(22px + env(safe-area-inset-bottom));">
   <h3 style="font-family:var(--font-display); font-size:16px; margin-bottom:16px;">Terminer la mission</h3>
   <div class="field"><label>Rapport du travail effectué</label><textarea id="fin-rapport" placeholder="Ex : Remplacement du disjoncteur principal, vérification du tableau électrique, tout est fonctionnel." style="min-height:90px;"></textarea></div>
+  <div class="field">
+    <label>Photos du travail effectué (optionnel)</label>
+    <div id="fin-photos-preview" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;"></div>
+    <button class="btn btn-ghost btn-sm" type="button" onclick="document.getElementById('fin-photos-input').click()">📷 Ajouter des photos</button>
+    <input type="file" id="fin-photos-input" accept="image/*" multiple style="display:none;" onchange="handleFinishPhotos(this)">
+  </div>
   <div class="field"><label>Montant reçu (GNF)</label><input type="number" id="fin-montant" placeholder="Ex : 200000"></div>
   <div class="field"><label>Moyen de paiement</label>
     <select id="fin-paiement">
@@ -633,15 +639,19 @@ function reqCardHTML(r){
       <div>🗓 ${wkFormatDate(r.date)}</div>
       ${r.statut===3 && r.montant ? `<div>💰 ${Number(r.montant).toLocaleString('fr-FR')} GNF · ${r.moyenPaiement||''}</div>` : ''}
       ${r.statut===3 && r.rapport ? `<div>📋 ${r.rapport}</div>` : ''}
+      ${r.statut===3 && r.photos && r.photos.length ? `<div style="display:flex; gap:6px; margin-top:6px;">${r.photos.map(src=>`<img src="${src}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid var(--line);">`).join('')}</div>` : ''}
     </div>
     ${actions}
   </div>`;
 }
 let _finishingId = null;
+let _finPhotos = [];
 function openFinishModal(id){
   _finishingId = id;
+  _finPhotos = [];
   document.getElementById('fin-montant').value = '';
   document.getElementById('fin-rapport').value = '';
+  renderFinPhotos();
   document.getElementById('finish-overlay').style.display = 'block';
   document.getElementById('finish-modal').style.display = 'block';
 }
@@ -650,6 +660,43 @@ function closeFinishModal(){
   document.getElementById('finish-overlay').style.display = 'none';
   document.getElementById('finish-modal').style.display = 'none';
 }
+function handleFinishPhotos(input){
+  const files = Array.from(input.files || []);
+  if (_finPhotos.length + files.length > 5) { alert('5 photos maximum par mission.'); input.value=''; return; }
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const img = new Image();
+      img.onload = function(){
+        const canvas = document.createElement('canvas');
+        const maxSize = 700;
+        let w = img.width, h = img.height;
+        if (w > maxSize || h > maxSize) {
+          if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+          else { w = Math.round(w * maxSize / h); h = maxSize; }
+        }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        _finPhotos.push(canvas.toDataURL('image/jpeg', 0.65));
+        renderFinPhotos();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+function renderFinPhotos(){
+  document.getElementById('fin-photos-preview').innerHTML = _finPhotos.map((src,i)=>`
+    <div style="position:relative; width:64px; height:64px;">
+      <img src="${src}" style="width:100%; height:100%; object-fit:cover; border-radius:10px; border:1px solid var(--line);">
+      <div onclick="removeFinPhoto(${i})" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; background:var(--danger); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; cursor:pointer;">✕</div>
+    </div>`).join('');
+}
+function removeFinPhoto(i){
+  _finPhotos.splice(i,1);
+  renderFinPhotos();
+}
 async function confirmFinish(){
   const montant = Number(document.getElementById('fin-montant').value || 0);
   const moyenPaiement = document.getElementById('fin-paiement').value;
@@ -657,8 +704,9 @@ async function confirmFinish(){
   if (montant <= 0) { alert('Merci de saisir le montant reçu.'); return; }
   if (!rapport) { alert('Merci de décrire brièvement le travail effectué.'); return; }
   const id = _finishingId;
+  const photos = _finPhotos.slice();
   closeFinishModal();
-  await updateStatus(id, 3, {montant, moyenPaiement, rapport});
+  await updateStatus(id, 3, {montant, moyenPaiement, rapport, photos});
 }
 async function updateStatus(id, statut, extra){
   const r = requests.find(x=>x.id===id);
