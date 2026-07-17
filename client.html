@@ -256,7 +256,21 @@ body{
     </div>
     <div class="splash-actions">
       <button class="btn btn-primary btn-block" onclick="go('home')">Se connecter</button>
-      <button class="btn btn-outline btn-block" onclick="go('home')">Créer un compte</button>
+      <button class="btn btn-outline btn-block" onclick="openAuth('register')">Créer un compte</button>
+    </div>
+  </div>
+
+  <!-- ===================== CONNEXION / INSCRIPTION ===================== -->
+  <div class="screen" id="screen-auth">
+    <div class="topbar"><div class="back-btn" onclick="go('splash')">←</div><h1 id="auth-title">Se connecter</h1><div style="width:36px;"></div></div>
+    <div class="content">
+      <div class="field"><label>Votre téléphone</label><input type="tel" id="auth-phone" placeholder="+224 6XX XX XX XX"></div>
+      <div class="field" id="auth-name-field"><label>Votre nom</label><input type="text" id="auth-name" placeholder="Nom complet"></div>
+      <button class="btn btn-primary btn-block" id="auth-submit-btn" onclick="submitAuth()">Continuer</button>
+      <p id="auth-hint" style="color:var(--muted); font-size:12px; text-align:center; margin-top:14px;"></p>
+      <p style="text-align:center; margin-top:10px; font-size:12.5px;">
+        <span id="auth-switch" style="color:var(--amber-dark); font-weight:700; cursor:pointer;" onclick="openAuth(_authMode==='register'?'login':'register')">Déjà un compte ? Se connecter</span>
+      </p>
     </div>
   </div>
 
@@ -740,6 +754,66 @@ async function submitBooking(){
 }
 
 /* ============ MES DEMANDES ============ */
+/* ============ CONNEXION / INSCRIPTION ============ */
+let _authMode = 'login';
+function openAuth(mode){
+  _authMode = mode;
+  document.getElementById('auth-title').textContent = mode==='login' ? 'Se connecter' : 'Créer un compte';
+  document.getElementById('auth-submit-btn').textContent = mode==='login' ? 'Continuer' : 'Créer mon compte';
+  document.getElementById('auth-name-field').style.display = mode==='register' ? 'block' : 'none';
+  document.getElementById('auth-switch').textContent = mode==='register' ? 'Déjà un compte ? Se connecter' : 'Pas encore de compte ? En créer un';
+  document.getElementById('auth-phone').value = localStorage.getItem('wk_client_phone') || '';
+  document.getElementById('auth-name').value = localStorage.getItem('wk_client_name') || '';
+  document.getElementById('auth-hint').textContent = '';
+  go('auth');
+}
+async function submitAuth(){
+  const phone = document.getElementById('auth-phone').value.trim();
+  if (!phone) { alert('Merci de renseigner votre numéro de téléphone.'); return; }
+
+  if (_authMode === 'register') {
+    const name = document.getElementById('auth-name').value.trim();
+    if (!name) { alert('Merci de renseigner votre nom.'); return; }
+    localStorage.setItem('wk_client_phone', phone);
+    localStorage.setItem('wk_client_name', name);
+    if (wkOnline) {
+      try {
+        const uid = phone.replace(/[^0-9+]/g, '');
+        await wkPut('utilisateurs', uid, {telephone: phone, nom: name, statut: 'actif', createdAt: new Date().toISOString()});
+      } catch(e) { console.log('Erreur création compte:', e); }
+    }
+    await loadMyBookings();
+    go('home');
+    return;
+  }
+
+  // Mode connexion : on cherche un compte existant avec ce numéro
+  if (!wkOnline) {
+    localStorage.setItem('wk_client_phone', phone);
+    await loadMyBookings();
+    go('home');
+    return;
+  }
+  try {
+    const users = await wkGetAll('utilisateurs');
+    const uid = phone.replace(/[^0-9+]/g, '');
+    const found = users.find(u => u._id === uid || u.telephone === phone);
+    if (found) {
+      localStorage.setItem('wk_client_phone', phone);
+      localStorage.setItem('wk_client_name', found.nom || '');
+      await loadMyBookings();
+      go('home');
+    } else {
+      document.getElementById('auth-hint').innerHTML = 'Aucun compte trouvé avec ce numéro. <span style="color:var(--amber-dark); font-weight:700; cursor:pointer;" onclick="openAuth(\'register\')">Créer un compte</span>';
+    }
+  } catch(e) {
+    console.log('Erreur connexion:', e);
+    localStorage.setItem('wk_client_phone', phone);
+    await loadMyBookings();
+    go('home');
+  }
+}
+
 async function loadMyBookings(){
   const phone = localStorage.getItem('wk_client_phone');
   if (!phone || !wkOnline) return;
