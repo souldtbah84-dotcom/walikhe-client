@@ -208,6 +208,16 @@ body{font-family:var(--font-body); background:var(--ink); color:var(--ink); disp
     <div class="bottom-nav" id="nav-planning"></div>
   </div>
 
+  <!-- ===================== DISCUSSION ===================== -->
+  <div class="screen" id="screen-chat">
+    <div class="topbar"><div class="back-btn" onclick="closeChat()">←</div><h1 id="chat-title">Discussion</h1><div style="width:36px;"></div></div>
+    <div class="content" id="chat-messages" style="display:flex; flex-direction:column; gap:8px; padding-bottom:16px;"></div>
+    <div style="position:sticky; bottom:0; background:var(--bg); padding:10px 20px calc(10px + env(safe-area-inset-bottom)); display:flex; gap:8px; border-top:1px solid var(--line);">
+      <input type="text" id="chat-input" placeholder="Écrire un message…" style="flex:1; border:1.5px solid var(--line); border-radius:999px; padding:11px 16px; font-family:inherit; font-size:14px;">
+      <button class="btn btn-primary" style="border-radius:50%; width:44px; height:44px; padding:0; flex-shrink:0;" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
   <!-- ===================== REVENUS ===================== -->
   <div class="screen" id="screen-revenue">
     <div class="topbar"><h1>Revenus</h1></div>
@@ -377,6 +387,8 @@ function wkFormatTime(iso){
 let myPro = null;
 let allPros = [];
 let requests = [];
+let _chatPollTimer = null;
+let _currentChatId = null;
 let activeFilter = 'all';
 let wkOnline = false;
 let _wkPollTimer = null;
@@ -555,6 +567,7 @@ function go(screen){
   if(screen==='planning') renderPlanning();
   if(screen==='revenue') renderRevenue();
   if(screen==='profile') renderProfile();
+  if(screen!=='chat' && _chatPollTimer) { clearInterval(_chatPollTimer); _chatPollTimer=null; }
   window.scrollTo(0,0);
 }
 function renderNav(active){
@@ -603,7 +616,8 @@ function reqCardHTML(r){
     </div>`;
   } else if(r.statut===1 || r.statut===2){
     actions = `<div class="req-actions">
-      <button class="btn btn-ghost btn-sm" onclick="alert('Ouverture de la messagerie avec ${r.clientNom}…')">💬 Contacter</button>
+      <button class="btn btn-ghost btn-sm" onclick="location.href='tel:${r.clientTelephone||''}'">📞 Appeler</button>
+      <button class="btn btn-ghost btn-sm" onclick="openChat(${r.id})">💬 Contacter</button>
       ${r.statut===1 ? `<button class="btn btn-primary btn-sm" onclick="updateStatus(${r.id},2)">Démarrer</button>` : `<button class="btn btn-primary btn-sm" onclick="openFinishModal(${r.id})">Terminer</button>`}
     </div>`;
   }
@@ -756,6 +770,73 @@ async function saveProfile(){
 }
 
 /* ============ INIT ============ */
+/* ============ MESSAGERIE ============ */
+async function openChat(demandeId){
+  const r = requests.find(x=>x.id===demandeId);
+  if (!r) return;
+  _currentChatId = demandeId;
+  document.getElementById('chat-title').textContent = r.clientNom;
+  document.getElementById('chat-messages').innerHTML = '<div class="empty">Chargement…</div>';
+  go('chat');
+  await loadChatMessages();
+  if (_chatPollTimer) clearInterval(_chatPollTimer);
+  _chatPollTimer = setInterval(async ()=>{
+    const scr = document.getElementById('screen-chat');
+    if (!scr || !scr.classList.contains('active') || !wkOnline) { clearInterval(_chatPollTimer); _chatPollTimer=null; return; }
+    await loadChatMessages();
+  }, 8000);
+}
+function closeChat(){
+  _currentChatId = null;
+  if (_chatPollTimer) { clearInterval(_chatPollTimer); _chatPollTimer=null; }
+  go('requests');
+}
+async function loadChatMessages(){
+  if (!wkOnline || !_currentChatId) { renderChatMessages([]); return; }
+  try {
+    const all = await wkGetAll('messages');
+    const mine = all.filter(m=>m.demandeId===_currentChatId).sort((a,b)=>(a.id||0)-(b.id||0));
+    renderChatMessages(mine);
+  } catch(e) { console.log('Erreur chargement messages:', e); }
+}
+function renderChatMessages(list){
+  const el = document.getElementById('chat-messages');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty">💬<br><br>Aucun message pour l’instant.<br>Écrivez le premier !</div>';
+    return;
+  }
+  el.innerHTML = list.map(m=>`
+    <div style="align-self:${m.sender==='pro'?'flex-end':'flex-start'}; max-width:75%; background:${m.sender==='pro'?'var(--navy)':'var(--card)'}; color:${m.sender==='pro'?'#fff':'var(--ink)'}; border:${m.sender==='pro'?'none':'1px solid var(--line)'}; padding:10px 14px; border-radius:14px; font-size:13.5px;">
+      ${m.texte}
+    </div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+async function sendMessage(){
+  const input = document.getElementById('chat-input');
+  const texte = input.value.trim();
+  if (!texte || !_currentChatId) return;
+  const r = requests.find(x=>x.id===_currentChatId);
+  const msg = {
+    id: Date.now(),
+    demandeId: _currentChatId,
+    proId: myPro ? myPro.id : null,
+    clientTelephone: r ? r.clientTelephone : '',
+    sender: 'pro',
+    texte,
+    createdAt: new Date().toISOString()
+  };
+  input.value = '';
+  const el = document.getElementById('chat-messages');
+  if (el.querySelector('.empty')) el.innerHTML = '';
+  el.insertAdjacentHTML('beforeend', `<div style="align-self:flex-end; max-width:75%; background:var(--navy); color:#fff; padding:10px 14px; border-radius:14px; font-size:13.5px;">${msg.texte}</div>`);
+  el.scrollTop = el.scrollHeight;
+  if (wkOnline) {
+    try { await wkPut('messages', 'msg-' + msg.id, msg); }
+    catch(e) { console.log('Erreur envoi message:', e); }
+  }
+}
+document.getElementById('chat-input')?.addEventListener('keydown', function(e){ if (e.key==='Enter') sendMessage(); });
+
 wkStart();
 </script>
 </body>
