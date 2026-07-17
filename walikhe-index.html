@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Walikhé — Choisir mon espace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#12192E; --navy:#182548; --amber:#F2A33C; --amber-dark:#D6871F;
+  --bg:#F6F4EF; --card:#FFFFFF; --line:#E7E3D8; --muted:#6E7280;
+  --font-display:'Space Grotesk', sans-serif; --font-body:'Inter', sans-serif;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:var(--font-body); min-height:100vh;
+  background:radial-gradient(circle at 30% 15%, #223267 0%, var(--navy) 45%, var(--ink) 100%);
+  display:flex; align-items:center; justify-content:center; padding:32px 20px;
+}
+.wrap{width:100%; max-width:420px; text-align:center;}
+.ring-logo{width:88px; height:88px; margin:0 auto 18px;}
+.brand-name{font-family:var(--font-display); font-weight:700; font-size:28px; color:#fff; letter-spacing:-0.5px;}
+.brand-name .e{color:var(--amber);}
+.tagline{font-family:var(--font-body); font-size:13px; color:rgba(255,255,255,0.6); margin-top:6px; margin-bottom:36px;}
+.card{
+  display:flex; align-items:center; gap:16px; background:var(--card); border-radius:16px;
+  padding:18px 20px; margin-bottom:14px; text-decoration:none; text-align:left;
+  box-shadow:0 8px 24px rgba(0,0,0,0.18); transition:transform .12s ease;
+}
+.card:active{transform:scale(0.98);}
+.card .ic{
+  width:48px; height:48px; border-radius:12px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+}
+.card.client .ic{background:#FCF0DC; }
+.card.pro .ic{background:#E4EAFB;}
+.card.admin .ic{background:var(--navy);}
+.card .txt h3{font-family:var(--font-display); font-size:15.5px; color:var(--ink); font-weight:700;}
+.card .txt p{font-size:12px; color:var(--muted); margin-top:2px;}
+.card .arrow{margin-left:auto; color:var(--muted); font-size:18px;}
+.foot{color:rgba(255,255,255,0.35); font-size:11px; margin-top:26px; font-family:var(--font-body);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="ring-logo">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="44" fill="none" stroke="#F2A33C" stroke-width="6" stroke-linecap="round"
+        stroke-dasharray="108 268" stroke-dashoffset="-14" transform="rotate(-90 50 50)"/>
+      <circle cx="50" cy="50" r="44" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round"
+        stroke-dasharray="108 268" stroke-dashoffset="-136" transform="rotate(-90 50 50)"/>
+      <path d="M 33 30 L 50 15 L 67 30" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="40" cy="42" r="7" fill="#ffffff"/>
+      <rect x="34.5" y="35" width="11" height="4" rx="1.5" fill="#ffffff"/>
+      <path d="M 40 49 C 32 51, 28 58, 30 68 L 38 82 L 46 68 C 47 62, 46 54, 52 50 L 46 46 C 43 47, 41 48, 40 49 Z" fill="#ffffff"/>
+      <circle cx="60" cy="42" r="7" fill="#F2A33C"/>
+      <path d="M 60 49 C 68 51, 72 58, 70 68 L 62 82 L 54 68 C 53 62, 54 54, 48 50 L 54 46 C 57 47, 59 48, 60 49 Z" fill="#F2A33C"/>
+      <circle cx="50" cy="52" r="3.2" fill="#ffffff"/>
+      <circle cx="50" cy="52" r="1.4" fill="#F2A33C"/>
+    </svg>
+  </div>
+  <div class="brand-name">walikh<span class="e">é</span></div>
+  <div class="tagline">LE BON OUVRIER, AU BON MOMENT.</div>
+
+  <a class="card client" href="client.html">
+    <div class="ic">🏠</div>
+    <div class="txt"><h3>Je suis client</h3><p>Trouver et réserver un professionnel</p></div>
+    <div class="arrow">›</div>
+  </a>
+
+  <a class="card pro" href="pro.html">
+    <div class="ic">🛠</div>
+    <div class="txt"><h3>Je suis un professionnel</h3><p>Gérer mes demandes et mon profil</p></div>
+    <div class="arrow">›</div>
+  </a>
+
+  <div class="foot">Conakry, Guinée</div>
+</div>
+</body>
+</html>
