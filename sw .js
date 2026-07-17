@@ -6,6 +6,7 @@ const CACHE_NAME = 'walikhe-cache-v1';
 const PRECACHE_URLS = [
   './client.html',
   './pro.html',
+  './admin.html',
   './index.html',
   './icon-192.png',
   './icon-512.png'
